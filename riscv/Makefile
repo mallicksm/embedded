@@ -52,8 +52,9 @@ clean:
 run: $(TARGET).elf
 	qemu-system-riscv32 \
       -machine virt \
-      -nographic \
+      -display none \
       -bios none \
+      -serial tcp::4444,server=on,wait=off \
       -kernel $(TARGET).elf \
       -S -gdb tcp::1234
 
