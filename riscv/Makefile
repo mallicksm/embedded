@@ -1,16 +1,20 @@
-TARGET   = firmware
-ARCH     = rv32imac
-ABI      = ilp32
+TARGET   := firmware
+ARCH     := rv32imac
+ABI      := ilp32
 
-LLVM = /opt/homebrew/opt/llvm/bin
+LLVM     := /opt/homebrew/opt/llvm/bin
+LLD      := /opt/homebrew/opt/lld/bin
 
-CC       = $(LLVM)/clang
-OBJCOPY  = $(LLVM)/llvm-objcopy
-OBJDUMP  = $(LLVM)/llvm-objdump
-READELF   := $(LLVM)/llvm-readelf
-GDB = riscv64-elf-gdb
+CC       := $(LLVM)/clang
+LD       := $(LLD)/ld.lld
+OBJCOPY  := $(LLVM)/llvm-objcopy
+OBJDUMP  := $(LLVM)/llvm-objdump
+READELF  := $(LLVM)/llvm-readelf
+GDB      := riscv64-elf-gdb
 
-COMMON_FLAGS = \
+COMMON_FLAGS := \
+
+CFLAGS := \
    --target=riscv32-unknown-elf \
    -march=$(ARCH) \
    -mabi=$(ABI) \
@@ -18,28 +22,32 @@ COMMON_FLAGS = \
    -fno-builtin \
    -fno-stack-protector \
    -fno-pic \
-   -nostdlib
-
-CFLAGS = \
-   $(COMMON_FLAGS) \
-   -g \
-   -O2 \
+   -nostdlib \
    -Wall \
-   -Wextra
+   -Wextra \
+   -O2 \
+   -g
 
-LDFLAGS = \
-   $(COMMON_FLAGS) \
-   -fuse-ld=lld \
-   -Wl,-T,linker.ld \
-   -Wl,-Map,$(TARGET).map \
-   -Wl,--gc-sections
+LDFLAGS := \
+   -e _start \
+   -T linker.ld \
+   -Map $(TARGET).map \
+   --gc-sections
 
-SRCS = crt0.S main.c
+SRCS := crt0.S main.c
+OBJS := $(SRCS:.c=.o)
+OBJS := $(OBJS:.S=.o)
 
 all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info
 
-$(TARGET).elf: $(SRCS) linker.ld
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) -o $@
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.S
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET).elf: $(OBJS) linker.ld
+	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
@@ -70,6 +78,6 @@ puart:
 	@nc localhost 4444
 
 clean:
-	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
+	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
 
 .PHONY: all run dbg puart clean

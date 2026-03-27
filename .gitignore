@@ -2,3 +2,5 @@
 */firmware.elf
 */firmware.lst
 */firmware.map
+*/firmware.info
+*/*.o

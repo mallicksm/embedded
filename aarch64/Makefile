@@ -1,29 +1,41 @@
-TARGET    := firmware
+TARGET   := firmware
 
-LLVM      := /opt/homebrew/opt/llvm/bin
-LLD       := /opt/homebrew/opt/lld/bin
+LLVM     := /opt/homebrew/opt/llvm/bin
+LLD      := /opt/homebrew/opt/lld/bin
 
-CC        := $(LLVM)/clang
-LD        := $(LLD)/ld.lld
-OBJDUMP   := $(LLVM)/llvm-objdump
-OBJCOPY   := $(LLVM)/llvm-objcopy
-READELF   := $(LLVM)/llvm-readelf
-GDB = aarch64-elf-gdb
+CC       := $(LLVM)/clang
+LD       := $(LLD)/ld.lld
+OBJDUMP  := $(LLVM)/llvm-objdump
+OBJCOPY  := $(LLVM)/llvm-objcopy
+READELF  := $(LLVM)/llvm-readelf
+GDB      := aarch64-elf-gdb
 
-OBJS      := crt0.o main.o
+SRCS := crt0.S main.c
+OBJS := $(SRCS:.c=.o)
+OBJS := $(OBJS:.S=.o)
 
-CFLAGS    := --target=aarch64-none-elf -ffreestanding -O0 -g
+CFLAGS := \
+   --target=aarch64-none-elf \
+   -ffreestanding \
+   -O0 \
+   -g
+
+LDFLAGS := \
+   -e _start \
+   -T linker.ld \
+   -Map $(TARGET).map \
+   --gc-sections
 
 all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info
 
-crt0.o: crt0.S
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-main.o: main.c
+%.o: %.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET).elf: $(OBJS)
-	$(LD) -e _start -T linker.ld -o $@ $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
