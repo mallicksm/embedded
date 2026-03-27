@@ -1,13 +1,13 @@
 #include <stdint.h>
 extern char __uart0_base[];
 
-#define UART0_BASE      ((uintptr_t)__uart0_base)
-#define UART_RBR        (*(volatile uint8_t *)(UART0_BASE + 0x00))
-#define UART_THR        (*(volatile uint8_t *)(UART0_BASE + 0x00))
-#define UART_LSR        (*(volatile uint8_t *)(UART0_BASE + 0x05))
+#define UART0_BASE ((uintptr_t)__uart0_base)
+#define UART_RBR (*(volatile uint8_t*)(UART0_BASE + 0x00))
+#define UART_THR (*(volatile uint8_t*)(UART0_BASE + 0x00))
+#define UART_LSR (*(volatile uint8_t*)(UART0_BASE + 0x05))
 
-#define UART_LSR_DR     (1 << 0)
-#define UART_LSR_THRE   (1 << 5)
+#define UART_LSR_DR (1 << 0)
+#define UART_LSR_THRE (1 << 5)
 
 void uart_putc(char c) {
    while ((UART_LSR & UART_LSR_THRE) == 0) {
@@ -23,7 +23,7 @@ char uart_getc(void) {
    return (char)UART_RBR;
 }
 
-void uart_puts(const char *s) {
+void uart_puts(const char* s) {
    while (*s) {
       if (*s == '\n') {
          uart_putc('\r');

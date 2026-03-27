@@ -1,9 +1,9 @@
 #include <stdint.h>
 #include "uart.h"
-#include "cli.h"
+#include "cli_cmd.h"
 
-static int help(int argc, char **argv) {
-   const struct cli_cmd *cmd = __cli_cmds_start;
+static int help(int argc, char** argv) {
+   const struct cli_cmd* cmd = __cli_cmds_start;
 
    (void)argc;
    (void)argv;
@@ -21,7 +21,7 @@ static int help(int argc, char **argv) {
 
 REGISTER("help", help);
 
-static int echo(int argc, char **argv) {
+static int echo(int argc, char** argv) {
    int i;
 
    for (i = 1; i < argc; i++) {

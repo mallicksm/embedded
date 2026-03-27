@@ -4,3 +4,4 @@
 */firmware.map
 */firmware.info
 */*.o
+*/compile_commands.json

@@ -1,16 +1,12 @@
 #include <stdint.h>
 #include "uart.h"
-#include "cli.h"
-
-#define CMD_BUF_SIZE    128
+#include "cli_cmd.h"
 
 static void uart_prompt(void) {
    uart_puts("> ");
 }
 
-#define MAX_ARGS 16
-
-static int streq(const char *a, const char *b) {
+static int streq(const char* a, const char* b) {
    while (*a && *b) {
       if (*a != *b) {
          return 0;
@@ -22,9 +18,9 @@ static int streq(const char *a, const char *b) {
    return (*a == '\0' && *b == '\0');
 }
 
-static int cli_tokenize(char *buf, char **argv, int max_args) {
+static int cli_tokenize(char* buf, char** argv, int max_args) {
    int argc = 0;
-   char *p = buf;
+   char* p = buf;
 
    while (*p && argc < max_args) {
       while (*p == ' ' || *p == '\t') {
@@ -52,8 +48,8 @@ static int cli_tokenize(char *buf, char **argv, int max_args) {
    return argc;
 }
 
-static const struct cli_cmd *cli_find(const char *name) {
-   const struct cli_cmd *cmd = __cli_cmds_start;
+static const struct cli_cmd* cli_find(const char* name) {
+   const struct cli_cmd* cmd = __cli_cmds_start;
 
    while (cmd < __cli_cmds_end) {
       if (streq(cmd->name, name)) {
@@ -65,10 +61,11 @@ static const struct cli_cmd *cli_find(const char *name) {
    return 0;
 }
 
-static void cli_exec(char *buf) {
-   char *argv[MAX_ARGS];
+#define MAX_ARGS 16
+static void cli_exec(char* buf) {
+   char* argv[MAX_ARGS];
    int argc;
-   const struct cli_cmd *cmd;
+   const struct cli_cmd* cmd;
 
    argc = cli_tokenize(buf, argv, MAX_ARGS);
    if (argc == 0) {
@@ -86,6 +83,7 @@ static void cli_exec(char *buf) {
    cmd->fn(argc, argv);
 }
 
+#define CMD_BUF_SIZE 128
 int main(void) {
    char buf[CMD_BUF_SIZE];
    int idx = 0;

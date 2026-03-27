@@ -38,7 +38,7 @@ SRCS := crt0.S main.c uart.c cli_cmd.c
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
 
-all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info
+all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -77,7 +77,19 @@ puart:
 	@echo "Ctrl-C to exit, Ctrl-D to quit"
 	@nc localhost 4444
 
+compile_commands.json:
+	@echo "[" > $@
+	@for f in $(SRCS); do \
+      echo "  {" >> $@; \
+      echo "    \"directory\": \"$(CURDIR)\"," >> $@; \
+      echo "    \"command\": \"$(CC) $(CFLAGS) -c $$f -o $${f%.c}.o\"," >> $@; \
+      echo "    \"file\": \"$$f\"" >> $@; \
+      echo "  }," >> $@; \
+   done
+	@sed -i '' -e '$$s/},/}/' $@   # fix last comma (macOS sed)
+	@echo "]" >> $@
+
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
 
-.PHONY: all run dbg puart clean
+.PHONY: all run dbg puart compile_commands.json clean
