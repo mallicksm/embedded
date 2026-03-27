@@ -61,7 +61,6 @@ dbg:
 	$(GDB) -tui $(TARGET).elf \
       -ex "set pagination off" \
       -ex "target remote :1234" \
-      -ex "break _start" \
-      -ex "c"
+      -ex 'set $$pc = 0x80000000'
 
 .PHONY: all clean run
