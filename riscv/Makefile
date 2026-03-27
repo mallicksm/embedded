@@ -2,11 +2,13 @@ TARGET   = firmware
 ARCH     = rv32imac
 ABI      = ilp32
 
-CC       = clang
-OBJCOPY  = llvm-objcopy
-OBJDUMP  = llvm-objdump
+LLVM_BIN = /opt/homebrew/opt/llvm/bin
 
-CFLAGS   = \
+CC       = $(LLVM_BIN)/clang
+OBJCOPY  = $(LLVM_BIN)/llvm-objcopy
+OBJDUMP  = $(LLVM_BIN)/llvm-objdump
+
+COMMON_FLAGS = \
    --target=riscv32-unknown-elf \
    -march=$(ARCH) \
    -mabi=$(ABI) \
@@ -14,16 +16,17 @@ CFLAGS   = \
    -fno-builtin \
    -fno-stack-protector \
    -fno-pic \
-   -O2 \
-   -Wall \
-   -Wextra \
    -nostdlib
 
-LDFLAGS  = \
-   --target=riscv32-unknown-elf \
-   -march=$(ARCH) \
-   -mabi=$(ABI) \
-   -nostdlib \
+CFLAGS = \
+   $(COMMON_FLAGS) \
+   -O2 \
+   -Wall \
+   -Wextra
+
+LDFLAGS = \
+   $(COMMON_FLAGS) \
+   -fuse-ld=lld \
    -Wl,-T,linker.ld \
    -Wl,-Map,$(TARGET).map \
    -Wl,--gc-sections
@@ -46,9 +49,9 @@ clean:
 
 run: $(TARGET).elf
 	qemu-system-riscv32 \
-	-machine virt \
-	-nographic \
-	-bios none \
-	-kernel $(TARGET).elf
+	   -machine virt \
+	   -nographic \
+	   -bios none \
+	   -kernel $(TARGET).elf
 
 .PHONY: all clean run
