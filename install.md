@@ -1,6 +1,6 @@
-Mac
-brew install qemu
-brew install llvm
-brew install lld
-brew install riscv64-elf-gdb
-brew install aarch64-elf-gdb
+# Mac
+- brew install qemu
+- brew install llvm
+- brew install lld
+- brew install riscv64-elf-gdb
+- brew install aarch64-elf-gdb

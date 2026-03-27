@@ -2,11 +2,11 @@ TARGET   = firmware
 ARCH     = rv32imac
 ABI      = ilp32
 
-LLVM_BIN = /opt/homebrew/opt/llvm/bin
+LLVM = /opt/homebrew/opt/llvm/bin
 
-CC       = $(LLVM_BIN)/clang
-OBJCOPY  = $(LLVM_BIN)/llvm-objcopy
-OBJDUMP  = $(LLVM_BIN)/llvm-objdump
+CC       = $(LLVM)/clang
+OBJCOPY  = $(LLVM)/llvm-objcopy
+OBJDUMP  = $(LLVM)/llvm-objdump
 GDB = riscv64-elf-gdb
 
 COMMON_FLAGS = \
@@ -46,9 +46,6 @@ $(TARGET).bin: $(TARGET).elf
 $(TARGET).lst: $(TARGET).elf
 	$(OBJDUMP) -d -S $< > $@
 
-clean:
-	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).map
-
 run: $(TARGET).elf
 	qemu-system-riscv32 \
       -machine virt \
@@ -67,4 +64,8 @@ dbg:
 puart:
 	@echo "Ctrl-C to exit, Ctrl-D to quit"
 	@nc localhost 4444
+
+clean:
+	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).map
+
 .PHONY: all clean run
