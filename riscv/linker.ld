@@ -18,6 +18,13 @@ SECTIONS
       *(.rodata*)
    } > RAM
 
+   .cli_cmds : ALIGN(8)
+   {
+      __cli_cmds_start = .;
+      KEEP(*(.cli_cmds))
+      __cli_cmds_end = .;
+   } > RAM
+
    .data : ALIGN(4)
    {
       __data_start = .;

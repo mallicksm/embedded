@@ -34,7 +34,7 @@ LDFLAGS := \
    -Map $(TARGET).map \
    --gc-sections
 
-SRCS := crt0.S main.c
+SRCS := crt0.S main.c uart.c cli_cmd.c
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
 
