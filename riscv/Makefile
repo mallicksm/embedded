@@ -7,6 +7,7 @@ LLVM_BIN = /opt/homebrew/opt/llvm/bin
 CC       = $(LLVM_BIN)/clang
 OBJCOPY  = $(LLVM_BIN)/llvm-objcopy
 OBJDUMP  = $(LLVM_BIN)/llvm-objdump
+GDB = riscv64-elf-gdb
 
 COMMON_FLAGS = \
    --target=riscv32-unknown-elf \
@@ -20,6 +21,7 @@ COMMON_FLAGS = \
 
 CFLAGS = \
    $(COMMON_FLAGS) \
+   -g \
    -O2 \
    -Wall \
    -Wextra
@@ -49,9 +51,17 @@ clean:
 
 run: $(TARGET).elf
 	qemu-system-riscv32 \
-	   -machine virt \
-	   -nographic \
-	   -bios none \
-	   -kernel $(TARGET).elf
+      -machine virt \
+      -nographic \
+      -bios none \
+      -kernel $(TARGET).elf \
+      -S -gdb tcp::1234
+
+dbg:
+	$(GDB) -tui $(TARGET).elf \
+      -ex "set pagination off" \
+      -ex "target remote :1234" \
+      -ex "break _start" \
+      -ex "c"
 
 .PHONY: all clean run
