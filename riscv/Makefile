@@ -64,4 +64,7 @@ dbg:
       -ex "target remote :1234" \
       -ex 'set $$pc = 0x80000000'
 
+puart:
+	@echo "Ctrl-C to exit, Ctrl-D to quit"
+	@nc localhost 4444
 .PHONY: all clean run
