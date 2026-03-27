@@ -6,6 +6,7 @@ LLD       := /opt/homebrew/opt/lld/bin
 CC        := $(LLVM)/clang
 LD        := $(LLD)/ld.lld
 OBJDUMP   := $(LLVM)/llvm-objdump
+OBJCOPY   := $(LLVM)/llvm-objcopy
 READELF   := $(LLVM)/llvm-readelf
 GDB = aarch64-elf-gdb
 
@@ -13,9 +14,7 @@ OBJS      := crt0.o main.o
 
 CFLAGS    := --target=aarch64-none-elf -ffreestanding -O0 -g
 
-.PHONY: all run clean dump elfinfo
-
-all: $(TARGET).elf
+all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info
 
 crt0.o: crt0.S
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -25,6 +24,15 @@ main.o: main.c
 
 $(TARGET).elf: $(OBJS)
 	$(LD) -e _start -T linker.ld -o $@ $(OBJS)
+
+$(TARGET).bin: $(TARGET).elf
+	$(OBJCOPY) -O binary $< $@
+
+$(TARGET).lst: $(TARGET).elf
+	$(OBJDUMP) -d -S $< > $@
+
+$(TARGET).info: $(TARGET).elf
+	$(READELF) -a $(TARGET).elf > $@
 
 run: $(TARGET).elf
 	qemu-system-aarch64 \
@@ -43,11 +51,7 @@ puart:
 	@echo "Ctrl-C to exit, Ctrl-D to quit"
 	@nc localhost 4444
 
-dump: $(TARGET).elf
-	$(OBJDUMP) -d $(TARGET).elf
-
-elfinfo: $(TARGET).elf
-	$(READELF) -a $(TARGET).elf
-
 clean:
-	rm -f $(OBJS) $(TARGET).elf
+	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
+
+.PHONY: all run dbg puart clean

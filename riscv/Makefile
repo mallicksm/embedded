@@ -7,6 +7,7 @@ LLVM = /opt/homebrew/opt/llvm/bin
 CC       = $(LLVM)/clang
 OBJCOPY  = $(LLVM)/llvm-objcopy
 OBJDUMP  = $(LLVM)/llvm-objdump
+READELF   := $(LLVM)/llvm-readelf
 GDB = riscv64-elf-gdb
 
 COMMON_FLAGS = \
@@ -35,7 +36,7 @@ LDFLAGS = \
 
 SRCS = crt0.S main.c
 
-all: $(TARGET).elf $(TARGET).bin $(TARGET).lst
+all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info
 
 $(TARGET).elf: $(SRCS) linker.ld
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) -o $@
@@ -45,6 +46,9 @@ $(TARGET).bin: $(TARGET).elf
 
 $(TARGET).lst: $(TARGET).elf
 	$(OBJDUMP) -d -S $< > $@
+
+$(TARGET).info: $(TARGET).elf
+	$(READELF) -a $(TARGET).elf > $@
 
 run: $(TARGET).elf
 	qemu-system-riscv32 \
@@ -66,6 +70,6 @@ puart:
 	@nc localhost 4444
 
 clean:
-	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).map
+	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
 
-.PHONY: all clean run
+.PHONY: all run dbg puart clean
