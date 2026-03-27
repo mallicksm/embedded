@@ -5,7 +5,7 @@
 _start:
    .cfi_startproc
    .cfi_undefined x30
-   ldr x0, =_stack_top
+   ldr x0, =__stack_top
    mov sp, x0
    .cfi_def_cfa sp, 0
 

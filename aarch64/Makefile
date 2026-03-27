@@ -48,16 +48,17 @@ $(TARGET).info: $(TARGET).elf
 
 run: $(TARGET).elf
 	qemu-system-aarch64 \
-		-machine virt \
-		-cpu cortex-a57 \
-		-nographic \
-		-kernel $(TARGET).elf \
-		-S -gdb tcp::1234
+      -machine virt \
+      -cpu cortex-a57 \
+      -display none \
+      -serial tcp::4444,server=on,wait=off \
+      -kernel $(TARGET).elf \
+      -S -gdb tcp::1234
 
 dbg:
 	$(GDB) -tui test.elf \
-		-ex "target remote :1234" \
-		-ex "layout split"
+      -ex "target remote :1234" \
+      -ex "layout split"
 
 puart:
 	@echo "Ctrl-C to exit, Ctrl-D to quit"
