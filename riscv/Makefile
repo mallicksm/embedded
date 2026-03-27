@@ -33,22 +33,22 @@ SRCS = crt0.S main.c
 all: $(TARGET).elf $(TARGET).bin $(TARGET).lst
 
 $(TARGET).elf: $(SRCS) linker.ld
-   $(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) -o $@
 
 $(TARGET).bin: $(TARGET).elf
-   $(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) -O binary $< $@
 
 $(TARGET).lst: $(TARGET).elf
-   $(OBJDUMP) -d -S $< > $@
+	$(OBJDUMP) -d -S $< > $@
 
 clean:
-   rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).map
+	rm -f $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).map
 
 run: $(TARGET).elf
-   qemu-system-riscv32 \
-      -machine virt \
-      -nographic \
-      -bios none \
-      -kernel $(TARGET).elf
+	qemu-system-riscv32 \
+	-machine virt \
+	-nographic \
+	-bios none \
+	-kernel $(TARGET).elf
 
 .PHONY: all clean run
