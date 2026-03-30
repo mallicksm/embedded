@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "uart.h"
 #include "cli_cmd.h"
+#include "printf.h"
 
 static int help(int argc, char** argv) {
    const struct cli_cmd* cmd = __cli_cmds_start;
@@ -80,16 +81,6 @@ static unsigned long strtoul(const char* nptr, char** endptr, int base) {
    return result;
 }
 
-static void uart_put_hex(uint32_t val) {
-   uart_putc('0');
-   uart_putc('x');
-
-   for (int i = 7; i >= 0; i--) {
-      uint32_t nibble = (val >> (i * 4)) & 0xF;
-      uart_putc(nibble < 10 ? ('0' + nibble) : ('A' + nibble - 10));
-   }
-}
-
 static int mrd(int argc, char** argv) {
    if (argc < 2) {
       uart_puts("Usage: mrd <addr> [count]\n");
@@ -102,10 +93,7 @@ static int mrd(int argc, char** argv) {
    volatile uint32_t* p = (uint32_t*)addr;
 
    for (uint32_t i = 0; i < count; i++) {
-      uart_put_hex((uint32_t)(uintptr_t)&p[i]);
-      uart_puts(": ");
-      uart_put_hex(p[i]);
-      uart_puts("\n");
+      printf("%p: 0x%08x\n", (void*)&p[i], p[i]);
    }
 
    return 0;
@@ -127,11 +115,7 @@ static int mwr(int argc, char** argv) {
 
    for (uint32_t i = 0; i < count; i++) {
       p[i] = data;
-
-      uart_put_hex((uint32_t)(uintptr_t)&p[i]);
-      uart_puts(": ");
-      uart_put_hex(data);
-      uart_puts("\n");
+      printf("%p: 0x%08x\n", (void*)&p[i], data);
    }
 
    return 0;
