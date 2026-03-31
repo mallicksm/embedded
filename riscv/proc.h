@@ -17,9 +17,6 @@
 //    s0-s11   callee-saved registers
 //------------------------------------------------------------------------------
 struct thread_context {
-   uint32_t ra;
-   uint32_t sp;
-
    uint32_t s0;
    uint32_t s1;
    uint32_t s2;
@@ -32,6 +29,9 @@ struct thread_context {
    uint32_t s9;
    uint32_t s10;
    uint32_t s11;
+
+   uint32_t ra;
+   uint32_t sp;
 };
 
 //------------------------------------------------------------------------------

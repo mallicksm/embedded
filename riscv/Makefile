@@ -50,6 +50,7 @@ OBJS := $(OBJS:.S=.o)
 
 all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
 
+# Special rules for thread_switch.S
 thread_switch.o: thread_switch.S
 	$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
 

@@ -2,15 +2,31 @@
 
 static struct task* g_current_task = 0;
 static struct task* g_first_task = 0;
+static struct thread_context g_sched_ctx;
+
+static uint32_t align_down(uint32_t value, uint32_t align) {
+   return value & ~(align - 1);
+}
+
+static void task_bootstrap(void) {
+   g_current_task->entry();
+   for(;;)
+      ;
+}
 
 void task_init(struct task* task,
                const char* name,
                void (*entry)(void),
                uint8_t* stack_base,
                uint32_t stack_size) {
+   uint32_t stack_top;
+
    task->name = name;
-   task->ctx.ra = 0;
-   task->ctx.sp = 0;
+   task->entry = entry;
+   task->stack_base = stack_base;
+   task->stack_size = stack_size;
+   task->state = TASK_RUNNABLE;
+   task->next = 0;
 
    task->ctx.s0 = 0;
    task->ctx.s1 = 0;
@@ -24,34 +40,19 @@ void task_init(struct task* task,
    task->ctx.s9 = 0;
    task->ctx.s10 = 0;
    task->ctx.s11 = 0;
+   
+   stack_top = (uint32_t)(uintptr_t)(stack_base + stack_size);
+   stack_top = align_down(stack_top, 16);
 
-   task->state = TASK_RUNNABLE;
-   task->entry = entry;
-   task->stack_base = stack_base;
-   task->stack_size = stack_size;
-   task->next = 0;
+   task->ctx.ra = (uint32_t)(uintptr_t)task_bootstrap;
+   task->ctx.sp = stack_top;
 
-   /*
-    * Rudimentary first step:
-    * we support one task for now, and sched_start()
-    * will directly call its entry function.
-    */
    if (g_first_task == 0) {
       g_first_task = task;
    }
 }
 
 void task_yield(void) {
-   /*
-    * Stub for now.
-    *
-    * Later this will:
-    *    - mark current task runnable
-    *    - hand control to the scheduler
-    *    - eventually resume here after thread_switch()
-    *
-    * For the current intermediate step, yield is a no-op.
-    */
 }
 
 void task_exit(void) {
@@ -59,12 +60,6 @@ void task_exit(void) {
       g_current_task->state = TASK_DONE;
    }
 
-   /*
-    * Rudimentary behavior for now:
-    * once a task exits, stop here forever.
-    *
-    * Later this should transfer control back to the scheduler.
-    */
    for (;;)
       ;
 }
@@ -101,17 +96,6 @@ void sched_start(void) {
    g_current_task = task;
    g_current_task->state = TASK_RUNNING;
 
-   /*
-    * Intermediate step:
-    * directly call the task entry as a normal C function.
-    *
-    * Later this will become real scheduler entry plus
-    * thread_switch() into the task context.
-    */
-   g_current_task->entry();
-
-   /*
-    * If the task entry returns, treat it as task exit.
-    */
+   thread_switch(&g_sched_ctx, &g_current_task->ctx);
    task_exit();
 }
