@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include "uart.h"
+
 extern char __uart0_base[];
 
 #define UART0_BASE ((uintptr_t)__uart0_base)

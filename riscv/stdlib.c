@@ -1,3 +1,5 @@
+#include "stdlib.h"
+
 unsigned long strtoul(const char* nptr, char** endptr, int base) {
    const char* s = nptr;
    unsigned long result = 0;
