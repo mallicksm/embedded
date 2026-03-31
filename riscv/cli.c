@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "uart.h"
-#include "cli_cmd.h"
+#include "cmd.h"
 #include "proc.h"
 #include "printf.h"
 

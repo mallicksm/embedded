@@ -37,7 +37,7 @@ LDFLAGS := \
 SRCS := crt0.S \
          main.c \
          uart.c \
-         cli_cmd.c \
+         cmd.c \
          printf.c \
          stdlib.c \
          cli.c \
