@@ -3,21 +3,10 @@
 #include "cmds.h"
 #include "proc.h"
 #include "printf.h"
+#include "string.h"
 
 static void prompt(void) {
    printf("> ");
-}
-
-static int streq(const char* a, const char* b) {
-   while (*a && *b) {
-      if (*a != *b) {
-         return 0;
-      }
-      a++;
-      b++;
-   }
-
-   return (*a == '\0' && *b == '\0');
 }
 
 static int cli_tokenize(char* buf, char** argv, int max_args) {
@@ -54,7 +43,7 @@ static const struct cmds* cli_find(const char* name) {
    const struct cmds* cmd = __cmds_start;
 
    while (cmd < __cmds_end) {
-      if (streq(cmd->name, name)) {
+      if (strcmp(cmd->name, name) == 0) {
          return cmd;
       }
       cmd++;

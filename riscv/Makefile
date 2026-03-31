@@ -40,6 +40,7 @@ SRCS := crt0.S \
          cmds.c \
          printf.c \
          stdlib.c \
+         string.c \
          cli.c \
          proc.c
 
