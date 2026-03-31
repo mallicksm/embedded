@@ -86,7 +86,7 @@ compile_commands.json:
       echo "    \"file\": \"$$f\"" >> $@; \
       echo "  }," >> $@; \
    done
-	@sed -i '' -e '$$s/},/}/' $@   # fix last comma (macOS sed)
+	@sed -e '$$s/},/}/' $@ > $@.tmp && mv $@.tmp $@
 	@echo "]" >> $@
 
 clean:
