@@ -116,12 +116,19 @@ void thread_switch(struct thread_context* old,
                    struct thread_context* new);
 
 //------------------------------------------------------------------------------
-// Initialize one task object.
+// Initialize a never-before-run task.
 //
-// Prepares the task control block so the scheduler can later run it.
-// This sets up identity, entry point, stack ownership, and initial state.
+// Prepares the task control block and builds the initial saved thread context
+// so the scheduler can later switch into it with thread_switch().
 //
-// This does not itself run the task.
+// The saved stack pointer is set to the top of the task's stack, and the saved
+// return address is set to the first-entry trampoline. That means the first
+// time this task is chosen and restored, the final ret in thread_switch() will
+// enter the trampoline, which then calls the task's entry function.
+//
+// In short:
+//    task_init() prepares a brand new task so its first scheduled "return"
+//    starts the task on its own stack.
 //------------------------------------------------------------------------------
 void task_init(struct task* task,
                const char* name,

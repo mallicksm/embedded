@@ -4,11 +4,17 @@ static struct task* g_current_task = 0;
 static struct task* g_first_task = 0;
 static struct thread_context g_sched_ctx;
 
-static uint32_t align_down(uint32_t value, uint32_t align) {
-   return value & ~(align - 1);
-}
-
-static void task_bootstrap(void) {
+//------------------------------------------------------------------------------
+// First-entry trampoline for a never-before-run task.
+//
+// task_init() sets a new task's saved SP to its stack top and its saved RA to
+// task_trampoline(). The first time thread_switch() restores that context, its
+// final ret lands here, and this trampoline starts the task's real entry
+// function on its own stack.
+//
+// Internal to proc.c: this is task startup machinery, not public API.
+//------------------------------------------------------------------------------
+static void task_trampoline(void) {
    g_current_task->entry();
    for (;;)
       ;
@@ -46,9 +52,9 @@ void task_init(struct task* task,
    task->ctx.s11 = 0;
 
    stack_top = (uint32_t)(uintptr_t)(stack_base + stack_size);
-   stack_top = align_down(stack_top, 16);
+   stack_top &= ~(uintptr_t)0xf;
 
-   task->ctx.ra = (uint32_t)(uintptr_t)task_bootstrap;
+   task->ctx.ra = (uint32_t)(uintptr_t)task_trampoline;
    task->ctx.sp = stack_top;
 
    if (g_first_task == 0) {
