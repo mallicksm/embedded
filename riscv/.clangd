@@ -1,0 +1,15 @@
+# Let clangd run your cross clang (needed for --target=riscv32-unknown-elf, headers, etc.)
+# Add your machine's clang path if different from these.
+QueryDriver:
+  - /opt/homebrew/opt/llvm/bin/clang
+  - /opt/homebrew/opt/llvm/bin/clang++
+  - /usr/bin/clang
+  - /usr/bin/clang++
+
+CompileFlags:
+  Add:
+    - -I.
+
+# "Grey" unused #include lines: clangd often mis-fires for freestanding / local headers.
+Diagnostics:
+  UnusedIncludes: None

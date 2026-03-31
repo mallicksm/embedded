@@ -82,7 +82,7 @@ compile_commands.json:
 	@for f in $(SRCS); do \
       echo "  {" >> $@; \
       echo "    \"directory\": \"$(CURDIR)\"," >> $@; \
-      echo "    \"command\": \"$(CC) $(CFLAGS) -c $$f -o $${f%.c}.o\"," >> $@; \
+      echo "    \"command\": \"$(CC) $(CFLAGS) -c $$f -o $${f%.*}.o\"," >> $@; \
       echo "    \"file\": \"$$f\"" >> $@; \
       echo "  }," >> $@; \
    done
