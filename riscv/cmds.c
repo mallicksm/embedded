@@ -1,17 +1,17 @@
 #include <stdint.h>
 #include "uart.h"
-#include "cmd.h"
+#include "cmds.h"
 #include "printf.h"
 #include "stdlib.h"
 
 static int help(int argc, char** argv) {
-   const struct cli_cmd* cmd = __cli_cmds_start;
+   const struct cmds* cmd = __cmds_start;
 
    (void)argc;
    (void)argv;
 
    uart_puts("Commands:\n");
-   while (cmd < __cli_cmds_end) {
+   while (cmd < __cmds_end) {
       uart_puts("  ");
       uart_puts(cmd->name);
       uart_puts("\n");

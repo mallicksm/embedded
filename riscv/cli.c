@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "uart.h"
-#include "cmd.h"
+#include "cmds.h"
 #include "proc.h"
 #include "printf.h"
 
@@ -50,10 +50,10 @@ static int cli_tokenize(char* buf, char** argv, int max_args) {
    return argc;
 }
 
-static const struct cli_cmd* cli_find(const char* name) {
-   const struct cli_cmd* cmd = __cli_cmds_start;
+static const struct cmds* cli_find(const char* name) {
+   const struct cmds* cmd = __cmds_start;
 
-   while (cmd < __cli_cmds_end) {
+   while (cmd < __cmds_end) {
       if (streq(cmd->name, name)) {
          return cmd;
       }
@@ -67,7 +67,7 @@ static const struct cli_cmd* cli_find(const char* name) {
 static void cli_exec(char* buf) {
    char* argv[MAX_ARGS];
    int argc;
-   const struct cli_cmd* cmd;
+   const struct cmds* cmd;
 
    argc = cli_tokenize(buf, argv, MAX_ARGS);
    if (argc == 0) {
