@@ -3,11 +3,6 @@
 static struct task* g_current_task = 0;
 static struct task* g_first_task = 0;
 
-void sched_init(void) {
-   g_current_task = 0;
-   g_first_task = 0;
-}
-
 void task_init(struct task* task,
                const char* name,
                void (*entry)(void),
@@ -76,6 +71,11 @@ void task_exit(void) {
 
 struct task* task_current(void) {
    return g_current_task;
+}
+
+void sched_init(void) {
+   g_current_task = 0;
+   g_first_task = 0;
 }
 
 struct task* sched_pick(void) {
