@@ -35,6 +35,7 @@ LDFLAGS := \
    --gc-sections
 
 SRCS := crt0.S \
+         thread_switch.S \
          main.c \
          uart.c \
          cmds.c \
@@ -48,6 +49,9 @@ OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
 
 all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
+
+thread_switch.o: thread_switch.S
+	$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
