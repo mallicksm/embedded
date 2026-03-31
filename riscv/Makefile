@@ -34,7 +34,15 @@ LDFLAGS := \
    -Map $(TARGET).map \
    --gc-sections
 
-SRCS := crt0.S main.c uart.c cli_cmd.c printf.c stdlib.c
+SRCS := crt0.S \
+         main.c \
+         uart.c \
+         cli_cmd.c \
+         printf.c \
+         stdlib.c \
+         cli.c \
+         proc.c
+
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
 
