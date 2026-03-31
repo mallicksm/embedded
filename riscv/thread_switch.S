@@ -4,7 +4,7 @@
 
 # void thread_switch(struct thread_context *old, struct thread_context *new);
 # a0 = old (may be NULL — skip save), a1 = new
-# Layout must match struct thread_context in proc.h (ra, sp, s0..s11).
+# Layout must match struct thread_context in proc.h (s0..s11, ra, sp).
 
 thread_switch:
    beqz a0, 2f
