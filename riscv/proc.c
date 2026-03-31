@@ -10,9 +10,13 @@ static uint32_t align_down(uint32_t value, uint32_t align) {
 
 static void task_bootstrap(void) {
    g_current_task->entry();
-   for(;;)
+   for (;;)
       ;
 }
+
+_Static_assert(sizeof(struct thread_context) == 56, "ctx size");
+_Static_assert(__builtin_offsetof(struct thread_context, ra) == 48, "ra offset");
+_Static_assert(__builtin_offsetof(struct thread_context, sp) == 52, "sp offset");
 
 void task_init(struct task* task,
                const char* name,
@@ -40,7 +44,7 @@ void task_init(struct task* task,
    task->ctx.s9 = 0;
    task->ctx.s10 = 0;
    task->ctx.s11 = 0;
-   
+
    stack_top = (uint32_t)(uintptr_t)(stack_base + stack_size);
    stack_top = align_down(stack_top, 16);
 
@@ -97,5 +101,7 @@ void sched_start(void) {
    g_current_task->state = TASK_RUNNING;
 
    thread_switch(&g_sched_ctx, &g_current_task->ctx);
-   task_exit();
+
+   for (;;)
+      ;
 }
