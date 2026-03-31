@@ -4,17 +4,23 @@
 //------------------------------------------------------------------------------
 // Saved machine context for a suspended task.
 //
-// This is the low-level register set handled by thread_switch().
-// It is not a full trap frame and it is not "all CPU state".
+// Used by:
+//    thread_switch(), which saves the old task's preserved register state here
+//    and restores the next task's preserved register state from here.
 //
-// It holds the callee-preserved register state that must survive
-// across a task switch, plus the stack pointer and return address
-// needed to resume execution later.
+// What it contains:
+//    Only the low-level register state needed to stop one task and later
+//    continue it.
 //
-// For RV32, this means:
-//    ra       return address
-//    sp       stack pointer
-//    s0-s11   callee-saved registers
+//    For RV32, this means:
+//       - s0-s11 : callee-saved registers
+//       - ra     : return address
+//       - sp     : stack pointer
+//
+// Control-flow story:
+//    This is not a full trap frame and not "all CPU state".
+//    It is only the continuation state needed so that a later ret can resume
+//    the task at the right place, on the right stack.
 //------------------------------------------------------------------------------
 struct thread_context {
    uint32_t s0;
@@ -37,20 +43,24 @@ struct thread_context {
 //------------------------------------------------------------------------------
 // Scheduler-visible state of a task.
 //
-// TASK_UNUSED
-//    Slot is free / not in use.
+// Used by:
+//    the scheduler to decide whether a task may run now, later, or never again.
 //
-// TASK_RUNNABLE
-//    Task is ready to run and may be chosen by the scheduler.
+// Meaning of each state:
+//    TASK_UNUSED
+//       Task slot is free and not in use.
 //
-// TASK_RUNNING
-//    Task is the one currently executing.
+//    TASK_RUNNABLE
+//       Task is eligible to be chosen by the scheduler.
 //
-// TASK_BLOCKED
-//    Task cannot run until some event wakes it.
+//    TASK_RUNNING
+//       Task is the one currently executing.
 //
-// TASK_DONE
-//    Task has exited and will not run again.
+//    TASK_BLOCKED
+//       Task exists but cannot run until some event wakes it.
+//
+//    TASK_DONE
+//       Task has finished and should not be scheduled again.
 //------------------------------------------------------------------------------
 enum task_state {
    TASK_UNUSED = 0,
@@ -63,26 +73,33 @@ enum task_state {
 //------------------------------------------------------------------------------
 // Task control block.
 //
-// This is the scheduler's bookkeeping object for one task.
-// It contains:
+// Used by:
+//    the scheduler as the main bookkeeping object for one schedulable task.
 //
+// What it contains:
 //    name
-//       Human-readable task name for debug / diagnostics.
+//       Human-readable name for debug / diagnostics.
 //
 //    ctx
-//       Saved execution context used by thread_switch().
+//       Saved machine context used by thread_switch().
 //
 //    state
-//       Current scheduler state.
+//       Scheduler-visible run state.
 //
 //    entry
-//       Task entry function used when the task starts for the first time.
+//       Task entry function. This is what the first-entry trampoline invokes
+//       the first time the task is scheduled.
 //
 //    stack_base / stack_size
-//       Memory region owned by this task for its stack.
+//       Memory owned by this task for its stack.
 //
 //    next
-//       Link field for runnable list / task queue management.
+//       Link field for task list / runnable queue management.
+//
+// Control-flow story:
+//    A task is the scheduler-owned object. Its ctx field is only one part of
+//    it. The scheduler reasons about the whole task; thread_switch() only
+//    reasons about task->ctx.
 //------------------------------------------------------------------------------
 struct task {
    const char* name;
@@ -100,17 +117,26 @@ struct task {
 //------------------------------------------------------------------------------
 // Low-level context switch primitive.
 //
-// Save the current task's callee-preserved execution state into *old,
-// restore the next task's saved execution state from *new, and resume
-// execution in the new task.
+// Called by:
+//    scheduler/task-switching code, not by ordinary task code.
 //
-// This function is implemented in assembly.
+// What it does:
+//    Saves the currently running task's callee-saved register set into *old,
+//    restores the next task's saved register set from *new, then resumes
+//    execution in that restored context.
+//
+// Control-flow story:
+//    thread_switch() does not return in the usual sense. Its final ret
+//    continues execution using the restored context from *new.
+//
+//    - If *new belongs to a task that has run before, execution resumes
+//      where that task last yielded.
+//    - If *new belongs to a never-before-run task, execution begins at the
+//      first-entry trampoline installed by task_init().
 //
 // Important:
-//    - it switches thread contexts, not full trap state
-//    - it returns in the restored task's context
-//    - it is the fundamental mechanism underneath task_yield()
-//      and scheduler handoff
+//    - switches thread contexts, not full trap state
+//    - implemented in assembly
 //------------------------------------------------------------------------------
 void thread_switch(struct thread_context* old,
                    struct thread_context* new);
@@ -118,17 +144,26 @@ void thread_switch(struct thread_context* old,
 //------------------------------------------------------------------------------
 // Initialize a never-before-run task.
 //
-// Prepares the task control block and builds the initial saved thread context
-// so the scheduler can later switch into it with thread_switch().
+// Called by:
+//    boot/init code for the first task, and later by running tasks that want
+//    to create/start additional tasks.
 //
-// The saved stack pointer is set to the top of the task's stack, and the saved
-// return address is set to the first-entry trampoline. That means the first
-// time this task is chosen and restored, the final ret in thread_switch() will
-// enter the trampoline, which then calls the task's entry function.
+// What it does:
+//    Fills in the task control block and builds the task's initial saved
+//    thread context.
 //
-// In short:
-//    task_init() prepares a brand new task so its first scheduled "return"
-//    starts the task on its own stack.
+//    In particular, it:
+//       - records the task's identity and entry function
+//       - records the task's stack ownership
+//       - marks the task runnable
+//       - sets the saved SP to the top of the task's stack
+//       - sets the saved RA to the first-entry trampoline
+//
+// Control-flow story:
+//    task_init() does not run the task immediately. It prepares the task so
+//    that when the scheduler later chooses it and thread_switch() restores its
+//    context, the final ret enters the trampoline, which then starts the
+//    task's entry function on its own stack.
 //------------------------------------------------------------------------------
 void task_init(struct task* task,
                const char* name,
@@ -139,46 +174,96 @@ void task_init(struct task* task,
 //------------------------------------------------------------------------------
 // Yield the CPU voluntarily from the current task.
 //
-// The current task gives control back to the scheduler so another
-// runnable task may be chosen. If the scheduler picks the same task
-// again, execution resumes immediately after this call appearing like a nop().
+// Called by:
+//    the currently running task.
+//
+// What it does:
+//    Gives control back to the scheduler so another runnable task may be
+//    chosen.
+//
+// Control-flow story:
+//    From the task's point of view, execution later continues immediately
+//    after task_yield() when this task is scheduled again.
+//
+//    That is why task_yield() often reads like a nop in task code, even
+//    though it may allow many other tasks to run before returning here.
 //------------------------------------------------------------------------------
 void task_yield(void);
 
 //------------------------------------------------------------------------------
 // Terminate the current task.
 //
-// Marks the current task as finished and transfers control back to the
-// scheduler. A task in TASK_DONE state is not expected to run again.
+// Called by:
+//    the current task when it is finished, or by task startup/exit machinery
+//    if a task entry function returns unexpectedly.
+//
+// What it does:
+//    Marks the current task as done so the scheduler will not run it again.
+//
+// Control-flow story:
+//    task_exit() is not expected to return to the exiting task. Control is
+//    handed back to the scheduler, which should choose some other runnable
+//    task.
 //------------------------------------------------------------------------------
 void task_exit(void);
 
 //------------------------------------------------------------------------------
-// Return the task that is currently running.
+// Return the currently running task.
 //
-// This is the scheduler's current task pointer exposed as a helper.
+// Called by:
+//    scheduler code, task code, and internal task startup/trampoline code.
+//
+// What it does:
+//    Returns the scheduler's current-task pointer.
+//
+// Control-flow story:
+//    Pure query helper; does not change scheduling state.
 //------------------------------------------------------------------------------
 struct task* task_current(void);
 
 //------------------------------------------------------------------------------
 // Initialize scheduler global state.
 //
-// Sets up internal scheduler bookkeeping before any tasks are started.
+// Called by:
+//    boot/main before any tasks are started.
+//
+// What it does:
+//    Resets scheduler bookkeeping and prepares the scheduler to accept tasks.
+//
+// Control-flow story:
+//    Does not start task execution by itself. It only prepares scheduler state.
 //------------------------------------------------------------------------------
 void sched_init(void);
 
 //------------------------------------------------------------------------------
 // Start task scheduling.
 //
-// Transfer control from boot/setup code into the scheduler so it may
-// pick and run the first runnable task.
+// Called by:
+//    boot/main after at least one runnable task has been initialized.
+//
+// What it does:
+//    Chooses the first runnable task and transfers control from boot/setup
+//    code into scheduled task execution.
+//
+// Control-flow story:
+//    In the normal model, sched_start() is a one-way handoff from boot code
+//    into the task world. The first thread_switch() performed here begins or
+//    resumes task execution, and boot code is not expected to continue running
+//    as the primary control loop.
 //------------------------------------------------------------------------------
 void sched_start(void);
 
 //------------------------------------------------------------------------------
 // Pick the next runnable task.
 //
-// Scheduler policy function that selects which task should run next.
-// The exact policy may be round-robin or something else later.
+// Called by:
+//    scheduler code when it needs to decide which task should run next.
+//
+// What it does:
+//    Applies scheduler policy to choose one runnable task.
+//
+// Control-flow story:
+//    This function only chooses; it does not itself switch contexts.
+//    The actual handoff happens later through thread_switch().
 //------------------------------------------------------------------------------
 struct task* sched_pick(void);
