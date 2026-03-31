@@ -70,7 +70,7 @@ void task_yield(void) {
 }
 
 void task_exit(void) {
-   if (g_current_task != 0) {
+   if (g_current_task) {
       g_current_task->state = TASK_DONE;
    }
 
@@ -107,10 +107,10 @@ void sched_start(void) {
          ;
    }
 
+   task->state = TASK_RUNNING;
    g_current_task = task;
-   g_current_task->state = TASK_RUNNING;
 
-   thread_switch(&g_sched_ctx, &g_current_task->ctx);
+   thread_switch(&g_sched_ctx, &task->ctx);
 
    for (;;)
       ;
