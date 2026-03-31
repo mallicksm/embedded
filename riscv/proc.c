@@ -7,12 +7,16 @@ static struct thread_context g_sched_ctx;
 //------------------------------------------------------------------------------
 // First-entry trampoline for a never-before-run task.
 //
-// task_init() sets a new task's saved SP to its stack top and its saved RA to
-// task_trampoline(). The first time thread_switch() restores that context, its
-// final ret lands here, and this trampoline starts the task's real entry
-// function on its own stack.
+// task_init() builds a brand new saved thread context with:
+//    - SP set to the top of the task's stack
+//    - RA set to task_trampoline()
 //
-// Internal to proc.c: this is task startup machinery, not public API.
+// The first time the scheduler switches to that task, thread_switch() restores
+// the saved context and its final ret lands here. From here, we invoke the
+// task's real entry function on the task's own stack.
+//
+// This function is internal to proc.c because it is part of task startup
+// machinery, not public scheduler API.
 //------------------------------------------------------------------------------
 static void task_trampoline(void) {
    g_current_task->entry();
