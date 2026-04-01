@@ -5,3 +5,4 @@
 */firmware.info
 */*.o
 */compile_commands.json
+*/.cache
