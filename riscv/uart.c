@@ -18,6 +18,13 @@ void uart_putc(char c) {
    UART_THR = (uint8_t)c;
 }
 
+int uart_getc_nonblock(void) {
+   if (!(UART_LSR & UART_LSR_DR)) {
+      return -1;   // no data available
+   }
+   return UART_RBR;
+}
+
 char uart_getc(void) {
    while ((UART_LSR & UART_LSR_DR) == 0) {
    }

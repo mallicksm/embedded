@@ -82,7 +82,11 @@ void cli(void) {
    prompt();
 
    for (;;) {
-      char c = uart_getc();
+      int c = uart_getc_nonblock();
+      if (c < 0) {
+         task_yield();
+         continue;
+      }
 
       if (c == '\r' || c == '\n') {
          buf[idx] = '\0';
