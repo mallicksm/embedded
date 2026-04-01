@@ -190,11 +190,11 @@ static void task_list_add(struct task* task) {
    task->next = g_first_task;
 }
 
-void task_start(struct task* task) {
+void task_start(const char* name, void (*entry)(void)) {
    int i;
    struct task* slot = 0;
 
-   if (task == 0) {
+   if (name == 0 || entry == 0) {
       return;
    }
 
@@ -210,10 +210,10 @@ void task_start(struct task* task) {
    }
 
    task_init(slot,
-             task->name,
-             task->entry,
-             g_task_stacks[i],
-             TASK_STACK_SIZE);
+      name,
+      entry,
+      g_task_stacks[i],
+      TASK_STACK_SIZE);
 
    task_list_add(slot);
 }

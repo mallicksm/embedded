@@ -5,6 +5,7 @@
 #include "stdlib.h"
 #include "tasks.h"
 #include "string.h"
+#include "proc.h"
 
 static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;
@@ -94,7 +95,7 @@ int cmd_run(int argc, char** argv) {
    task = __tasks_start;
    while (task < __tasks_end) {
       if (strcmp(task->name, argv[1]) == 0) {
-         task_start(task->task);
+         task_start(task->name, task->fn);
          return 0;
       }
       task++;

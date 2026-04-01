@@ -283,4 +283,4 @@ struct task* sched_pick(void);
 //
 // This allows multiple live instances of the same registered task body.
 //------------------------------------------------------------------------------
-void task_start(struct task* task);
+void task_start(const char* name, void (*entry)(void));
