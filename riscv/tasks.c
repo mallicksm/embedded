@@ -4,7 +4,7 @@
 
 void a(void) {
    for (;;) {
-      printf("a\n");
+      printf("Task:a\n");
       task_yield();
    }
 }
@@ -13,7 +13,7 @@ REGISTER_TASK("a", a);
 
 void b(void) {
    for (;;) {
-      printf("b\n");
+      printf("Task:b\n");
       task_yield();
    }
 }

@@ -89,10 +89,10 @@ dbg:
       -ex 'set $$pc = 0x80000000'
 
 gui:
-	gdbgui $(TARGET).elf \
-      --gdb riscv64-elf-gdb \
-      --host localhost \
-      --port 1234
+	gdbgui $(TARGET).elf --gdb-cmd riscv64-elf-gdb
+
+ddd:
+	ddd --debugger riscv64-elf-gdb $(TARGET).elf
 
 puart:
 	@echo "Ctrl-C to exit, Ctrl-D to quit"
