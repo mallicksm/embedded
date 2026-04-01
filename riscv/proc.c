@@ -24,6 +24,7 @@ static struct thread_context g_sched_ctx;
 //------------------------------------------------------------------------------
 static void task_trampoline(void) {
    g_current_task->entry();
+   task_exit();
    for (;;)
       ;
 }
@@ -158,39 +159,36 @@ struct task* task_current(void) {
 void sched_init(void) {
    g_current_task = 0;
    g_first_task = 0;
+   for (int i = 0; i < MAX_TASKS; i++) {
+      g_task_pool[i].state = TASK_UNUSED;
+      g_task_pool[i].next = 0;
+   }
 }
 
 struct task* sched_pick(void) {
    struct task* start;
-   struct task* p;
+   struct task* t;
 
-   if (g_first_task == 0) {
+   if (g_first_task == 0)
       return 0;
-   }
 
-   if (g_current_task == 0) {
-      p = g_first_task;
-      do {
-         if (p->state == TASK_RUNNABLE) {
-            return p;
-         }
-         p = p->next;
-      } while (p != g_first_task);
-
+   /*
+    * Circular ring: task->next (single-task ring: next points to self).
+    * Start after current when there is one; otherwise from list head.
+    * Return the first TASK_RUNNABLE found; skip TASK_RUNNING / others.
+    */
+   start = (g_current_task != 0) ? g_current_task->next : g_first_task;
+   if (start == 0)
       return 0;
-   }
 
-   start = g_current_task->next;
-   p = start;
-
+   t = start;
    do {
-      if (p->state == TASK_RUNNABLE) {
-         return p;
-      }
-      p = p->next;
-   } while (p != start);
+      if (t->state == TASK_RUNNABLE)
+         return t;
+      t = t->next;
+   } while (t != start && t != 0);
 
-   return g_current_task;
+   return 0;
 }
 
 void sched_start(void) {
