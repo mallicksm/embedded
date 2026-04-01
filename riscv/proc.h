@@ -267,3 +267,20 @@ void sched_start(void);
 //    The actual handoff happens later through thread_switch().
 //------------------------------------------------------------------------------
 struct task* sched_pick(void);
+
+//------------------------------------------------------------------------------
+// Start one new live instance from a registered task template.
+//
+// The input task supplies the template information:
+//    - task name
+//    - task entry function
+//    - desired stack size
+//
+// task_start() does not make that registered task object itself live.
+// Instead, it allocates an unused slot from the internal task pool,
+// initializes that slot from the template, links the new live task into
+// the runnable task list, and leaves the registered template object inert.
+//
+// This allows multiple live instances of the same registered task body.
+//------------------------------------------------------------------------------
+void task_start(struct task* task);

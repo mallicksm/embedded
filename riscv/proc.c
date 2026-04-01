@@ -1,9 +1,13 @@
 #include "proc.h"
 
+#define MAX_TASKS 64
+#define TASK_STACK_SIZE 1024
+
+static struct task g_task_pool[MAX_TASKS];
+static uint8_t g_task_stacks[MAX_TASKS][TASK_STACK_SIZE];
 static struct task* g_current_task = 0;
 static struct task* g_first_task = 0;
 static struct thread_context g_sched_ctx;
-
 //------------------------------------------------------------------------------
 // First-entry trampoline for a never-before-run task.
 //
@@ -69,10 +73,62 @@ void task_init(struct task* task,
 void task_yield(void) {
 }
 
-void task_exit(void) {
-   if (g_current_task) {
-      g_current_task->state = TASK_DONE;
+static void task_list_remove(struct task* task) {
+   struct task* p;
+
+   if (g_first_task == 0 || task == 0) {
+      return;
    }
+
+   if (g_first_task == task && g_first_task->next == g_first_task) {
+      g_first_task = 0;
+      task->next = 0;
+      return;
+   }
+
+   p = g_first_task;
+   while (p->next != task && p->next != g_first_task) {
+      p = p->next;
+   }
+
+   if (p->next != task) {
+      return;
+   }
+
+   p->next = task->next;
+
+   if (g_first_task == task) {
+      g_first_task = task->next;
+   }
+
+   task->next = 0;
+}
+
+void task_exit(void) {
+   struct task* dead = g_current_task;
+   struct task* next;
+
+   if (dead == 0) {
+      for (;;)
+         ;
+   }
+
+   task_list_remove(dead);
+   dead->state = TASK_UNUSED;
+
+   if (g_first_task == 0) {
+      g_current_task = 0;
+      thread_switch(&dead->ctx, &g_sched_ctx);
+
+      for (;;)
+         ;
+   }
+
+   next = g_first_task;
+   g_current_task = next;
+   next->state = TASK_RUNNING;
+
+   thread_switch(&dead->ctx, &next->ctx);
 
    for (;;)
       ;
@@ -114,4 +170,50 @@ void sched_start(void) {
 
    for (;;)
       ;
+}
+
+static void task_list_add(struct task* task) {
+   struct task* p;
+
+   if (g_first_task == 0) {
+      g_first_task = task;
+      task->next = task;
+      return;
+   }
+
+   p = g_first_task;
+   while (p->next != g_first_task) {
+      p = p->next;
+   }
+
+   p->next = task;
+   task->next = g_first_task;
+}
+
+void task_start(struct task* task) {
+   int i;
+   struct task* slot = 0;
+
+   if (task == 0) {
+      return;
+   }
+
+   for (i = 0; i < MAX_TASKS; i++) {
+      if (g_task_pool[i].state == TASK_UNUSED) {
+         slot = &g_task_pool[i];
+         break;
+      }
+   }
+
+   if (slot == 0) {
+      return;
+   }
+
+   task_init(slot,
+             task->name,
+             task->entry,
+             g_task_stacks[i],
+             TASK_STACK_SIZE);
+
+   task_list_add(slot);
 }

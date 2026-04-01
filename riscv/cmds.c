@@ -3,6 +3,8 @@
 #include "cmds.h"
 #include "printf.h"
 #include "stdlib.h"
+#include "tasks.h"
+#include "string.h"
 
 static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;
@@ -80,3 +82,26 @@ static int cmd_mwr(int argc, char** argv) {
 }
 
 REGISTER_CMD("mwr", cmd_mwr);
+
+int cmd_run(int argc, char** argv) {
+   const struct tasks* task;
+
+   if (argc != 2) {
+      printf("usage: run <task>\n");
+      return -1;
+   }
+
+   task = __tasks_start;
+   while (task < __tasks_end) {
+      if (strcmp(task->name, argv[1]) == 0) {
+         task_start(task->task);
+         return 0;
+      }
+      task++;
+   }
+
+   printf("Unknown task: %s\n", argv[1]);
+   return -1;
+}
+
+REGISTER_CMD("run", cmd_run);

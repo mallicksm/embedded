@@ -43,7 +43,8 @@ SRCS := crt0.S \
          stdlib.c \
          string.c \
          cli.c \
-         proc.c
+         proc.c \
+         tasks.c
 
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
