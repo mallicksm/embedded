@@ -4,7 +4,7 @@
 #include "printf.h"
 #include "stdlib.h"
 
-static int help(int argc, char** argv) {
+static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;
 
    (void)argc;
@@ -21,9 +21,9 @@ static int help(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("help", help);
+REGISTER("help", cmd_help);
 
-static int echo(int argc, char** argv) {
+static int cmd_echo(int argc, char** argv) {
    int i;
 
    for (i = 1; i < argc; i++) {
@@ -37,7 +37,7 @@ static int echo(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("echo", echo);
+REGISTER("echo", cmd_echo);
 
 static int mrd(int argc, char** argv) {
    if (argc < 2) {
@@ -59,7 +59,7 @@ static int mrd(int argc, char** argv) {
 
 REGISTER("mrd", mrd);
 
-static int mwr(int argc, char** argv) {
+static int cmd_mwr(int argc, char** argv) {
    if (argc < 3) {
       uart_puts("Usage: mwr <addr> <data> [count]\n");
       return -1;
@@ -79,4 +79,4 @@ static int mwr(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("mwr", mwr);
+REGISTER("mwr", cmd_mwr);
