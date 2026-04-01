@@ -108,9 +108,6 @@ void cli(void) {
    }
 }
 
-static struct task cli_task;
-static uint8_t cli_stack[1024];
-
-void task_cli (void) {
-   task_init(&cli_task, "cli", cli, cli_stack, sizeof(cli_stack));
+void task_cli(void) {
+   task_start("cli", cli);
 }

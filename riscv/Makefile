@@ -25,7 +25,7 @@ CFLAGS := \
    -nostdlib \
    -Wall \
    -Wextra \
-   -O2 \
+   -O0 \
    -g
 
 LDFLAGS := \

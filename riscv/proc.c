@@ -64,13 +64,30 @@ void task_init(struct task* task,
 
    task->ctx.ra = (uint32_t)(uintptr_t)task_trampoline;
    task->ctx.sp = stack_top;
-
-   if (g_first_task == 0) {
-      g_first_task = task;
-   }
 }
 
 void task_yield(void) {
+   struct task* current;
+   struct task* next;
+
+   current = g_current_task;
+   if (current == 0) {
+      return;
+   }
+
+   next = sched_pick();
+   if (next == 0 || next == current) {
+      return;
+   }
+
+   current->state = TASK_RUNNABLE;
+   next->state = TASK_RUNNING;
+   g_current_task = next;
+
+   thread_switch(&current->ctx, &next->ctx);
+
+   g_current_task = current;
+   current->state = TASK_RUNNING;
 }
 
 static void task_list_remove(struct task* task) {
@@ -144,15 +161,36 @@ void sched_init(void) {
 }
 
 struct task* sched_pick(void) {
+   struct task* start;
+   struct task* p;
+
    if (g_first_task == 0) {
       return 0;
    }
 
-   if (g_first_task->state != TASK_RUNNABLE) {
+   if (g_current_task == 0) {
+      p = g_first_task;
+      do {
+         if (p->state == TASK_RUNNABLE) {
+            return p;
+         }
+         p = p->next;
+      } while (p != g_first_task);
+
       return 0;
    }
 
-   return g_first_task;
+   start = g_current_task->next;
+   p = start;
+
+   do {
+      if (p->state == TASK_RUNNABLE) {
+         return p;
+      }
+      p = p->next;
+   } while (p != start);
+
+   return g_current_task;
 }
 
 void sched_start(void) {
@@ -210,10 +248,10 @@ void task_start(const char* name, void (*entry)(void)) {
    }
 
    task_init(slot,
-      name,
-      entry,
-      g_task_stacks[i],
-      TASK_STACK_SIZE);
+             name,
+             entry,
+             g_task_stacks[i],
+             TASK_STACK_SIZE);
 
    task_list_add(slot);
 }
