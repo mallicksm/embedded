@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include "tasks.h"
 #include "printf.h"
-#include "proc.h"
 
 static uint8_t a_stack[512];
 
