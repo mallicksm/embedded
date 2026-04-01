@@ -85,7 +85,6 @@ void cli(void) {
       char c = uart_getc();
 
       if (c == '\r' || c == '\n') {
-         printf("\n");
          buf[idx] = '\0';
 
          cli_exec(buf);
@@ -102,7 +101,6 @@ void cli(void) {
       } else {
          if (idx < (CMD_BUF_SIZE - 1)) {
             buf[idx++] = c;
-            printf("%c", c);
          }
       }
    }
