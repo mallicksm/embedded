@@ -88,6 +88,12 @@ dbg:
       -ex "target remote :1234" \
       -ex 'set $$pc = 0x80000000'
 
+gui:
+	gdbgui $(TARGET).elf \
+      --gdb riscv64-elf-gdb \
+      --host localhost \
+      --port 1234
+
 puart:
 	@echo "Ctrl-C to exit, Ctrl-D to quit"
 	@nc localhost 4444
@@ -107,4 +113,4 @@ compile_commands.json:
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
 
-.PHONY: all run dbg puart compile_commands.json clean
+.PHONY: all run dbg puart compile_commands.json clean gui
