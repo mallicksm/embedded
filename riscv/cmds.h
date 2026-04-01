@@ -7,7 +7,7 @@ struct cmds {
    cli_fn_t fn;
 };
 
-#define REGISTER(_name, _fn)                   \
+#define REGISTER_CMD(_name, _fn)         \
    static const struct cmds __cmds_##_fn \
       __attribute__((used, section(".cmds"))) = {(_name), (_fn)}
 

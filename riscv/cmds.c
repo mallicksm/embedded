@@ -21,7 +21,7 @@ static int cmd_help(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("help", cmd_help);
+REGISTER_CMD("help", cmd_help);
 
 static int cmd_echo(int argc, char** argv) {
    int i;
@@ -37,7 +37,7 @@ static int cmd_echo(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("echo", cmd_echo);
+REGISTER_CMD("echo", cmd_echo);
 
 static int mrd(int argc, char** argv) {
    if (argc < 2) {
@@ -57,7 +57,7 @@ static int mrd(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("mrd", mrd);
+REGISTER_CMD("mrd", mrd);
 
 static int cmd_mwr(int argc, char** argv) {
    if (argc < 3) {
@@ -79,4 +79,4 @@ static int cmd_mwr(int argc, char** argv) {
    return 0;
 }
 
-REGISTER("mwr", cmd_mwr);
+REGISTER_CMD("mwr", cmd_mwr);

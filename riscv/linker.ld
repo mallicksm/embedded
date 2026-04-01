@@ -25,6 +25,13 @@ SECTIONS
       __cmds_end = .;
    } > RAM
 
+   .cmds : ALIGN(8)
+   {
+      __tasks_start = .;
+      KEEP(*(.cmds))
+      __tasks_end = .;
+   } > RAM
+
    .data : ALIGN(4)
    {
       __data_start = .;
