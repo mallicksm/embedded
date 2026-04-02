@@ -88,7 +88,11 @@ void cli(void) {
          continue;
       }
 
-      if (c == '\r' || c == '\n') {
+      if (c == '\n')
+         continue;
+
+      if (c == '\r') {
+         printf("\n");
          buf[idx] = '\0';
 
          cli_exec(buf);
@@ -104,7 +108,8 @@ void cli(void) {
          }
       } else {
          if (idx < (CMD_BUF_SIZE - 1)) {
-            buf[idx++] = c;
+            buf[idx++] = (char)c;
+            printf("%c", c);
          }
       }
    }

@@ -83,10 +83,7 @@ run: $(TARGET).elf
       -S -gdb tcp::1234
 
 dbg:
-	$(GDB) -tui $(TARGET).elf \
-      -ex "set pagination off" \
-      -ex "target remote :1234" \
-      -ex 'set $$pc = 0x80000000'
+	riscv64-elf-gdb -tui firmware.elf -x debug.gdb
 
 gui:
 	gdbgui $(TARGET).elf --gdb-cmd riscv64-elf-gdb
@@ -95,8 +92,8 @@ ddd:
 	ddd --debugger riscv64-elf-gdb $(TARGET).elf
 
 puart:
-	@echo "Ctrl-C to exit, Ctrl-D to quit"
-	@nc localhost 4444
+	@echo "Ctrl + ] to exit"
+	@socat -,raw,echo=0,escape=0x1d tcp:localhost:4444
 
 compile_commands.json:
 	@echo "[" > $@

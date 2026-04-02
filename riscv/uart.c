@@ -12,15 +12,20 @@ extern char __uart0_base[];
 #define UART_LSR_THRE (1 << 5)
 
 void uart_putc(char c) {
-   while ((UART_LSR & UART_LSR_THRE) == 0) {
+   if (c == '\n') {
+      uart_putc('\r'); // inject CR before LF
    }
 
-   UART_THR = (uint8_t)c;
+   while (!(UART_LSR & (1 << 5))) {
+      ; // wait for THR empty
+   }
+
+   UART_THR = c;
 }
 
 int uart_getc_nonblock(void) {
    if (!(UART_LSR & UART_LSR_DR)) {
-      return -1;   // no data available
+      return -1; // no data available
    }
    return UART_RBR;
 }
