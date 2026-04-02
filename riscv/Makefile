@@ -11,8 +11,7 @@ OBJCOPY  := $(LLVM)/llvm-objcopy
 OBJDUMP  := $(LLVM)/llvm-objdump
 READELF  := $(LLVM)/llvm-readelf
 GDB      := riscv64-elf-gdb
-
-COMMON_FLAGS := \
+QEMU     := qemu-system-riscv32
 
 CFLAGS := \
    --target=riscv32-unknown-elf \
@@ -49,10 +48,10 @@ SRCS := crt0.S \
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
 
-all: $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
+all: clean $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
 
-# Special rules for thread_switch.S
 thread_switch.o: thread_switch.S
+   # Special rules for thread_switch.S
 	$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
 
 %.o: %.c
@@ -74,7 +73,8 @@ $(TARGET).info: $(TARGET).elf
 	$(READELF) -a $(TARGET).elf > $@
 
 run: $(TARGET).elf
-	qemu-system-riscv32 \
+	@echo "Ctrl + c to exit"
+	$(QEMU) \
       -machine virt \
       -display none \
       -bios none \
@@ -82,19 +82,18 @@ run: $(TARGET).elf
       -kernel $(TARGET).elf \
       -S -gdb tcp::1234
 
-dbg:
-	riscv64-elf-gdb -tui firmware.elf -x debug.gdb
-
-gui:
-	gdbgui $(TARGET).elf --gdb-cmd riscv64-elf-gdb
-
-ddd:
-	ddd --debugger riscv64-elf-gdb $(TARGET).elf
-
 puart:
+	@echo "Welcome TMOS \"Task Manager OS\" Console"
 	@echo "Ctrl + ] to exit"
 	@socat -,raw,echo=0,escape=0x1d tcp:localhost:4444
 
+dbg:
+	$(GDB) \
+      -tui $(TARGET).elf -x debug.gdb
+
+#-------------------------------------------------------------------------------
+# Helper
+#-------------------------------------------------------------------------------
 compile_commands.json:
 	@echo "[" > $@
 	@for f in $(SRCS); do \
@@ -110,4 +109,10 @@ compile_commands.json:
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
 
-.PHONY: all run dbg puart compile_commands.json clean gui
+gui:
+	gdbgui $(TARGET).elf --gdb-cmd riscv64-elf-gdb
+
+ddd:
+	ddd --debugger riscv64-elf-gdb $(TARGET).elf
+
+.PHONY: all run dbg puart compile_commands.json clean puart dbg

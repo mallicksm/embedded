@@ -4,3 +4,4 @@
 - brew install lld
 - brew install riscv64-elf-gdb
 - brew install aarch64-elf-gdb
+- brew install socat
