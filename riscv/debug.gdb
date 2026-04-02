@@ -5,6 +5,12 @@ target remote :1234
 set $pc = 0x80000000
 set confirm on
 
+python
+import sys
+sys.path.append(".")
+import gdb_printers
+end
+
 define connect
   set confirm off
   set pagination off
