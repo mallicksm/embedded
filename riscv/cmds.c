@@ -42,7 +42,7 @@ static int cmd_echo(int argc, char** argv) {
 
 REGISTER_CMD("echo", cmd_echo);
 
-static int mrd(int argc, char** argv) {
+static int cmd_mrd(int argc, char** argv) {
    if (argc < 2) {
       uart_puts("Usage: mrd <addr> [count]\n");
       return -1;
@@ -60,7 +60,7 @@ static int mrd(int argc, char** argv) {
    return 0;
 }
 
-REGISTER_CMD("mrd", mrd);
+REGISTER_CMD("mrd", cmd_mrd);
 
 static int cmd_mwr(int argc, char** argv) {
    if (argc < 3) {
