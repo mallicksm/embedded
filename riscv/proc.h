@@ -208,20 +208,6 @@ void task_yield(void);
 void task_exit(void);
 
 //------------------------------------------------------------------------------
-// Return the currently running task.
-//
-// Called by:
-//    scheduler code, task code, and internal task startup/trampoline code.
-//
-// What it does:
-//    Returns the scheduler's current-task pointer.
-//
-// Control-flow story:
-//    Pure query helper; does not change scheduling state.
-//------------------------------------------------------------------------------
-struct task* task_current(void);
-
-//------------------------------------------------------------------------------
 // Initialize scheduler global state.
 //
 // Called by:
@@ -252,21 +238,6 @@ void sched_init(void);
 //    as the primary control loop.
 //------------------------------------------------------------------------------
 void sched_start(void);
-
-//------------------------------------------------------------------------------
-// Pick the next runnable task.
-//
-// Called by:
-//    scheduler code when it needs to decide which task should run next.
-//
-// What it does:
-//    Applies scheduler policy to choose one runnable task.
-//
-// Control-flow story:
-//    This function only chooses; it does not itself switch contexts.
-//    The actual handoff happens later through thread_switch().
-//------------------------------------------------------------------------------
-struct task* sched_pick(void);
 
 //------------------------------------------------------------------------------
 // Start one new live instance from a registered task template.

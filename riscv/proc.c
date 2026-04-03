@@ -141,6 +141,26 @@ void task_exit(void) {
       ;
 }
 
+//------------------------------------------------------------------------------
+// Scheduler and task control methods
+//
+//    sched_init()
+//       Initialize the scheduling subsystem and reset internal task-pool state.
+//       This should be called once during boot before any tasks are started.
+//
+//    sched_start()
+//       Enter scheduled execution for the first time.
+//       This should be called once after at least one task has been started.
+//       It picks the first runnable task and transfers control to it.
+//
+//    task_start()
+//       Establish one task and make it runnable.
+//       This prepares the task control block, initializes its saved execution
+//       context, records its stack and entry point, and adds it to the task
+//       pool so the scheduler may later run it.
+//
+// These functions are part of the public task/scheduler API.
+//------------------------------------------------------------------------------
 void sched_init(void) {
    g_current_task = 0;
    g_first_task = 0;
