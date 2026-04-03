@@ -1,11 +1,8 @@
 # gdb_printers.py
-
-# --- LSP-safe import ---
 try:
     import gdb
 except ImportError:
     gdb = None
-
 
 # --------------------------------------------------
 # uint32_t printer → hex
@@ -16,7 +13,6 @@ class Uint32Printer:
 
     def to_string(self):
         return "0x%08x" % int(self.val)
-
 
 # --------------------------------------------------
 # thread_context printer → structured registers
@@ -39,7 +35,6 @@ class ThreadContextPrinter:
         for r in regs:
             yield (r, self.val[r])
 
-
 # --------------------------------------------------
 # lookup dispatcher
 # --------------------------------------------------
@@ -60,7 +55,6 @@ def lookup(val):
 
     return None
 
-
 # --------------------------------------------------
 # register printer
 # --------------------------------------------------
@@ -71,7 +65,6 @@ def register_printers():
     # Avoid duplicate registration
     if lookup not in gdb.pretty_printers:
         gdb.pretty_printers.append(lookup)
-
 
 # auto-register
 register_printers()
