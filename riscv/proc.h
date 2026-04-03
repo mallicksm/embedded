@@ -93,7 +93,7 @@ struct task {
 //------------------------------------------------------------------------------
 // Low-level context switch primitive implemented by thread_switch.S.
 //
-// Called by: scheduler/task-switching code, 
+// Called by: scheduler/task-switching code,
 // 	1. task_yield()
 //      2. task_exit()
 //      3. sched_start()
@@ -184,68 +184,82 @@ void task_init(struct task* task,
 void task_yield(void);
 
 //------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 // Terminate the current task.
 //
-// Called by: task_trampoline()
-//    the current task when it is finished, the task startup/exit machinery
+// Called by:
+//    - The currently running task (explicit exit)
+//    - task_trampoline() after the task entry function returns
 //
 // What it does:
-//    - removes the task from the queue
-//    - 
-//    Marks the current task as done so the scheduler will not run it again.
+//    - Selects the next runnable task
+//    - Removes the current task from the runnable list
+//    - Marks it UNUSED
+//    - Switches execution to the selected task
+//
+// System invariant:
+//    At least one runnable task (CLI) must always exist.
+//    If no runnable task is found, the system halts.
 //
 // Control-flow story:
-//    task_exit() is not expected to return to the exiting task. Control is
-//    handed back to the scheduler, which should choose some other runnable
-//    task.
+//    The current task never resumes execution after calling task_exit().
 //------------------------------------------------------------------------------
 void task_exit(void);
 
 //------------------------------------------------------------------------------
-// Initialize scheduler global state.
+// public
+//------------------------------------------------------------------------------
+// Initialize the scheduler and task subsystem.
 //
-// Called by:
-//    boot/main before any tasks are started.
+// Called by: system initialization (once at boot)
 //
 // What it does:
-//    Resets scheduler bookkeeping and prepares the scheduler to accept tasks.
+//    - Clears current task pointer
+//    - Resets the runnable task list to empty
+//    - Marks all task slots as UNUSED
 //
-// Control-flow story:
-//    Does not start task execution by itself. It only prepares scheduler state.
+// Control-flow model:
+//    After this call, no tasks exist and the scheduler is idle.
+//    Tasks must be created via task_start() before calling sched_start().
 //------------------------------------------------------------------------------
 void sched_init(void);
 
 //------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 // Start task scheduling.
 //
 // Called by:
-//    boot/main after at least one runnable task has been initialized.
+//    boot/main after at least one runnable task exists.
 //
 // What it does:
-//    Chooses the first runnable task and transfers control from boot/setup
-//    code into scheduled task execution.
+//    Selects the first runnable task (CLI) and transfers control to it.
 //
 // Control-flow story:
-//    In the normal model, sched_start() is a one-way handoff from boot code
-//    into the task world. The first thread_switch() performed here begins or
-//    resumes task execution, and boot code is not expected to continue running
-//    as the primary control loop.
+//    One-way handoff. Does not return.
 //------------------------------------------------------------------------------
 void sched_start(void);
 
 //------------------------------------------------------------------------------
-// Start one new live instance from a registered task template.
+// public
+//------------------------------------------------------------------------------
+// Create and register a new runnable task instance.
 //
-// The input task supplies the template information:
-//    - task name
-//    - task entry function
-//    - desired stack size
+// Called by:
+//    boot or running tasks to introduce new work into the system.
 //
-// task_start() does not make that registered task object itself live.
-// Instead, it allocates an unused slot from the internal task pool,
-// initializes that slot from the template, links the new live task into
-// the runnable task list, and leaves the registered template object inert.
+// What it does:
+//    - Allocates an unused slot from the task pool
+//    - Initializes the task (name, entry, stack, context)
+//    - Links the task into the runnable list
 //
-// This allows multiple live instances of the same registered task body.
+// Notes:
+//    Each call creates a new live instance of the task entry function.
+//    Multiple instances of the same task body may exist simultaneously.
+//
+// Control-flow story:
+//    The task is not executed immediately. It becomes eligible for scheduling
+//    and will run when selected by the scheduler.
 //------------------------------------------------------------------------------
 void task_start(const char* name, void (*entry)(void));

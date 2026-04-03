@@ -136,27 +136,48 @@ void task_yield(void) {
    current->state = TASK_RUNNING;
 }
 
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
+// Terminate the current task.
+//
+// Called by:
+//    - The currently running task (explicit exit)
+//    - task_trampoline() after the task entry function returns
+//
+// What it does:
+//    - Selects the next runnable task
+//    - Removes the current task from the runnable list
+//    - Marks it UNUSED
+//    - Switches execution to the selected task
+//
+// System invariant:
+//    At least one runnable task (CLI) must always exist.
+//    If no runnable task is found, the system halts.
+//
+// Control-flow story:
+//    The current task never resumes execution after calling task_exit().
+//------------------------------------------------------------------------------
 void task_exit(void) {
    struct task* dead = g_current_task;
-   struct task* next;
 
    if (dead == 0) {
       for (;;)
          ;
    }
 
+   // Pick next BEFORE removing self
+   struct task* next = task_list_pick();
+
    task_list_remove(dead);
    dead->state = TASK_UNUSED;
 
-   if (g_first_task == 0) {
-      g_current_task = 0;
-      thread_switch(&dead->ctx, &g_sched_ctx);
-
+   // System invariant: at least one task must exist (CLI)
+   if (next == 0) {
       for (;;)
          ;
    }
 
-   next = g_first_task;
    g_current_task = next;
    next->state = TASK_RUNNING;
 
@@ -165,7 +186,6 @@ void task_exit(void) {
    for (;;)
       ;
 }
-
 //------------------------------------------------------------------------------
 // Scheduler and task control methods
 //
@@ -339,4 +359,3 @@ static void task_list_remove(struct task* task) {
 
    task->next = 0;
 }
-
