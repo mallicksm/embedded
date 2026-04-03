@@ -1,3 +1,10 @@
+//------------------------------------------------------------------------------
+// System model:
+//
+//   - CLI is the primary OS task and is started at boot.
+//   - User tasks are registered via REGISTER_TASK() and started via CLI.
+//   - At least one task (CLI) must always remain runnable.
+//------------------------------------------------------------------------------
 #include <stdint.h>
 #include "uart.h"
 #include "cmds.h"
@@ -72,6 +79,11 @@ static void cli_exec(char* buf) {
    cmd->fn(argc, argv);
 }
 
+//------------------------------------------------------------------------------
+// System invariant:
+//    The CLI task is started at boot and must not exit.
+//    It guarantees that at least one runnable task always exists.
+//------------------------------------------------------------------------------
 #define CMD_BUF_SIZE 128
 void cli(void) {
    char buf[CMD_BUF_SIZE];
