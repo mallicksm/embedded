@@ -6,7 +6,7 @@
 static struct task g_task_pool[MAX_TASKS];
 static uint8_t g_task_stacks[MAX_TASKS][TASK_STACK_SIZE];
 static struct task* g_current_task = 0;
-static struct task* g_first_task = 0;
+struct task* g_first_task = 0;
 static struct thread_context g_sched_ctx;
 
 // Protect thread_context to thread_switch.S placement
@@ -263,6 +263,12 @@ void task_start(const char* name, void (*entry)(void)) {
    task_list_add(slot);
 }
 
+void task_sleep(int ticks) {
+   g_current_task->sleep_ticks = ticks;
+   g_current_task->state = TASK_SLEEPING;
+
+   task_yield();
+}
 //------------------------------------------------------------------------------
 // Task pool methods
 //

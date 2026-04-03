@@ -57,6 +57,7 @@ enum task_state {
    TASK_UNUSED = 0,
    TASK_RUNNABLE,
    TASK_RUNNING,
+   TASK_SLEEPING,
    TASK_BLOCKED,
    TASK_DONE,
 };
@@ -68,13 +69,14 @@ enum task_state {
 //    the scheduler as the main bookkeeping object for one schedulable task.
 //
 // What it contains:
-//    name:       Human-readable name for debug / diagnostics.
-//    ctx:        Saved machine context used by thread_switch().
-//    state:      Scheduler-visible run state.
-//    entry:      Task entry function. This is what the first-entry trampoline invokes the first time the task is scheduled.
-//    stack_base: Stack Base Memory owned by this task.
-//    stack_size: Stack Memory Size owned by this task.
-//    next:       Link field for task list / runnable queue management.
+//    name:        Human-readable name for debug / diagnostics.
+//    ctx:         Saved machine context used by thread_switch().
+//    state:       Scheduler-visible run state.
+//    sleep_ticks: ticks the task will be sleeping for
+//    entry:       Task entry function. This is what the first-entry trampoline invokes the first time the task is scheduled.
+//    stack_base:  Stack Base Memory owned by this task.
+//    stack_size:  Stack Memory Size owned by this task.
+//    next:        Link field for task list / runnable queue management.
 //
 // Control-flow story:
 //    A task is a scheduler-owned object.
@@ -84,6 +86,7 @@ struct task {
    const char* name;
    struct thread_context ctx;
    enum task_state state;
+   int sleep_ticks;
    void (*entry)(void);
    uint8_t* stack_base;
    uint32_t stack_size;
@@ -263,3 +266,4 @@ void sched_start(void);
 //    and will run when selected by the scheduler.
 //------------------------------------------------------------------------------
 void task_start(const char* name, void (*entry)(void));
+void task_sleep(int);

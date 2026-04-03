@@ -28,3 +28,14 @@ void run_c(void) {
 }
 
 REGISTER_TASK("c", run_c);
+
+void run_worker() {
+   printf("A\n");
+   task_sleep(3);
+   printf("B\n");
+
+   while (1)
+      task_yield();
+}
+
+REGISTER_TASK("worker", run_worker);

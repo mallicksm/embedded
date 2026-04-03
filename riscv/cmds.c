@@ -106,3 +106,30 @@ int cmd_run(int argc, char** argv) {
 }
 
 REGISTER_CMD("run", cmd_run);
+
+extern struct task* g_first_task;
+int cmd_ps(int argc, char** argv) {
+   (void)argc;
+   (void)argv;
+   struct task* t = g_first_task;
+
+   printf("NAME\tSTATE\tSLEEP\n");
+
+   do {
+      printf("%s\t", t->name);
+
+      if (t->state == TASK_RUNNING)
+         printf("RUNNING\t");
+      else if (t->state == TASK_RUNNABLE)
+         printf("RUNNABLE\t");
+      else if (t->state == TASK_SLEEPING)
+         printf("SLEEPING\t");
+
+      printf("%d\n", t->sleep_ticks);
+
+      t = t->next;
+   } while (t != g_first_task);
+   return 0;
+}
+
+REGISTER_CMD("ps", cmd_ps);
