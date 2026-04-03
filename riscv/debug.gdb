@@ -13,10 +13,17 @@ set confirm on
 
 python
 import sys
-sys.path.append(".")
 import importlib
+if "gdb" not in sys.path:
+   sys.path.append("gdb")
+
 import gdb_printers
-importlib.reload(gdb_printers)
+import gdb_csr
+import gdb_ctx
+#
+gdb_printers = importlib.reload(gdb_printers)
+gdb_csr      = importlib.reload(gdb_csr)
+gdb_ctx      = importlib.reload(gdb_ctx)
 end
 
 define connect
