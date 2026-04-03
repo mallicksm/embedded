@@ -126,7 +126,10 @@ void task_yield(void) {
       return;
    }
 
-   current->state = TASK_RUNNABLE;
+   if (current->state == TASK_RUNNING) {
+      current->state = TASK_RUNNABLE;
+   }
+
    next->state = TASK_RUNNING;
    g_current_task = next;
 
@@ -268,6 +271,27 @@ void task_sleep(int ticks) {
    g_current_task->state = TASK_SLEEPING;
 
    task_yield();
+}
+
+void sched_tick(void)
+{
+   struct task* t;
+
+   if (g_first_task == 0) {
+      return;
+   }
+
+   t = g_first_task;
+   do {
+      if (t->state == TASK_SLEEPING) {
+         t->sleep_ticks--;
+         if (t->sleep_ticks <= 0) {
+            t->sleep_ticks = 0;
+            t->state = TASK_RUNNABLE;
+         }
+      }
+      t = t->next;
+   } while (t != g_first_task);
 }
 //------------------------------------------------------------------------------
 // Task pool methods

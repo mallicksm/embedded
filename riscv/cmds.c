@@ -133,3 +133,13 @@ int cmd_ps(int argc, char** argv) {
 }
 
 REGISTER_CMD("ps", cmd_ps);
+
+/* cmds.c */
+static int cmd_tick(int argc, char** argv)
+{
+   (void)argc;
+   (void)argv;
+   sched_tick();
+   return 0;
+}
+REGISTER_CMD("tick", cmd_tick);

@@ -267,3 +267,4 @@ void sched_start(void);
 //------------------------------------------------------------------------------
 void task_start(const char* name, void (*entry)(void));
 void task_sleep(int);
+void sched_tick(void);
