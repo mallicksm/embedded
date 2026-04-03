@@ -85,7 +85,7 @@ static void cli_exec(char* buf) {
 //    It guarantees that at least one runnable task always exists.
 //------------------------------------------------------------------------------
 #define CMD_BUF_SIZE 128
-void cli(void) {
+void run_cli(void) {
    char buf[CMD_BUF_SIZE];
    int idx = 0;
 
@@ -128,5 +128,5 @@ void cli(void) {
 }
 
 void task_cli(void) {
-   task_start("cli", cli);
+   task_start("cli", run_cli);
 }
