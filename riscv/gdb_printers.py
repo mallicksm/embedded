@@ -25,15 +25,21 @@ class ThreadContextPrinter:
         return "thread_context"
 
     def children(self):
-        # Order matters for debugging
-        regs = [
-            "sp", "ra",   # 🔥 most important first
-            "s0","s1","s2","s3","s4","s5",
-            "s6","s7","s8","s9","s10","s11"
+        pairs = [
+            ("ra", "sp"),
+            ("s0", "s1"),
+            ("s2", "s3"),
+            ("s4", "s5"),
+            ("s6", "s7"),
+            ("s8", "s9"),
+            ("s10", "s11"),
         ]
 
-        for r in regs:
-            yield (r, self.val[r])
+        for a, b in pairs:
+            yield (
+                f"{a},{b}",
+                f"{self.val[a]}  {self.val[b]}"
+            )
 
 # --------------------------------------------------
 # lookup dispatcher

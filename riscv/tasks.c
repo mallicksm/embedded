@@ -19,3 +19,12 @@ void b(void) {
 }
 
 REGISTER_TASK("b", b);
+
+void c(void) {
+   for (int i = 0; i < 100000; i++) {
+      printf("Task:c\n");
+      task_yield();
+   }
+}
+
+REGISTER_TASK("c", c);
