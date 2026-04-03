@@ -9,27 +9,43 @@ static struct task* g_current_task = 0;
 static struct task* g_first_task = 0;
 static struct thread_context g_sched_ctx;
 
+// Protect thread_context to thread_switch.S placement
 _Static_assert(sizeof(struct thread_context) == 56, "ctx size");
 _Static_assert(__builtin_offsetof(struct thread_context, ra) == 48, "ra offset");
 _Static_assert(__builtin_offsetof(struct thread_context, sp) == 52, "sp offset");
 
+// Forward declaration of local statics
 static void task_list_add(struct task* task);
 static void task_list_remove(struct task* task);
 static struct task* task_list_pick(void);
 
 //------------------------------------------------------------------------------
-// First-entry trampoline for a never-before-run task.
+// Initialize a new task (never run before)
 //
-// task_init() builds a brand new saved thread context with:
-//    - SP set to the top of the task's stack
-//    - RA set to task_trampoline()
+// Called by: task_start()
 //
-// The first time the scheduler switches to that task, thread_switch() restores
-// the saved context and its final ret lands here. From here, we invoke the
-// task's real entry function on the task's own stack.
+// What it does:
+//    - Sets up the Task Control Block (TCB)
+//    - Assigns stack memory and initializes stack pointer (sp)
+//    - Stores entry function (task entry point)
+//    - Prepares initial CPU context:
+//         * ra → task_trampoline()   (what executes when entry returns)
+//         * sp → top of task stack
+//    - Marks task as RUNNABLE
 //
-// This function is internal to proc.c because it is part of task startup
-// machinery, not public scheduler API.
+// Control-flow model:
+//    This does NOT start execution.
+//
+//    The task is inserted into the scheduler queue. On first schedule:
+//       thread_switch() restores this context →
+//       execution begins at entry() with a valid stack.
+//
+//    If entry() ever returns:
+//       control flows into task_trampoline() (never back to scheduler directly)
+//
+// Why trampoline exists:
+//    Prevents falling off the stack and gives a controlled place
+//    to handle task exit (cleanup, loop, or panic).
 //------------------------------------------------------------------------------
 static void task_trampoline(void);
 void task_init(struct task* task,
@@ -74,18 +90,27 @@ static void task_trampoline(void) {
 }
 
 //------------------------------------------------------------------------------
-// Voluntarily yield the CPU from the current task.
+// public
+//------------------------------------------------------------------------------
+// Yield the CPU voluntarily from the current task.
 //
-// If there is another runnable task, save the current task's execution
-// context, switch to the selected task, and resume execution there.
+// Called by: the currently running task.
 //
-// If no other runnable task exists, or if the scheduler selects the
-// current task again, this function returns immediately and execution
-// continues in the current task.
+// What it does:
+//    If another runnable task exists:
+//       - Saves the current task's CPU context
+//       - Selects the next runnable task
+//       - Switches execution to that task
 //
-// When the current task is later scheduled again, execution resumes
-// immediately after the thread_switch() inside this function, and
-// task_yield() then returns to its caller as a normal function call.
+//    If no other runnable task exists, or if the scheduler selects the
+//    current task again, this function returns immediately.
+//
+// Control-flow story:
+//    From the task's point of view, execution resumes at the instruction
+//    immediately following task_yield() when this task is scheduled again.
+//
+//    Although task_yield() may transfer control to other tasks, the calling
+//    task observes it as a simple function call that eventually returns.
 //------------------------------------------------------------------------------
 void task_yield(void) {
    struct task* current;
