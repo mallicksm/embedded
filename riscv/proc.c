@@ -49,7 +49,7 @@ static struct task* task_list_pick(void);
 //    to handle task exit (cleanup, loop, or panic).
 //------------------------------------------------------------------------------
 static void task_trampoline(void);
-void task_init(struct task* task,
+static void task_init(struct task* task,
                const char* name,
                void (*entry)(void),
                uint8_t* stack_base,
@@ -95,6 +95,40 @@ static void task_trampoline(void) {
    task_exit();
 
    UNREACHABLE();
+}
+
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
+//    task_start()
+//       Establish one task and make it runnable.
+//       This prepares the task control block, initializes its saved execution
+//       context, records its stack and entry point, and adds it to the task
+//       pool so the scheduler may later run it.
+//
+void task_start(const char* name, void (*entry)(void)) {
+   int i;
+   struct task* slot = 0;
+
+   ASSERT_MSG(name != 0, "task_start: null name\n");
+   ASSERT_MSG(entry != 0, "task_start: null entry\n");
+
+   for (i = 0; i < MAX_TASKS; i++) {
+      if (g_task_pool[i].state == TASK_UNUSED) {
+         slot = &g_task_pool[i];
+         break;
+      }
+   }
+
+   ASSERT_MSG(slot != 0, "task_start: no free task slots\n");
+
+   task_init(slot,
+             name,
+             entry,
+             g_task_stacks[i],
+             TASK_STACK_SIZE);
+
+   task_list_add(slot);
 }
 
 //------------------------------------------------------------------------------
@@ -202,19 +236,6 @@ void task_exit(void) {
 //       Initialize the scheduling subsystem and reset internal task-pool state.
 //       This should be called once during boot before any tasks are started.
 //
-//    sched_start()
-//       Enter scheduled execution for the first time.
-//       This should be called once after at least one task has been started.
-//       It picks the first runnable task and transfers control to it.
-//
-//    task_start()
-//       Establish one task and make it runnable.
-//       This prepares the task control block, initializes its saved execution
-//       context, records its stack and entry point, and adds it to the task
-//       pool so the scheduler may later run it.
-//
-// These functions are part of the public task/scheduler API.
-//------------------------------------------------------------------------------
 static void idle(void);
 void sched_init(void) {
    g_current_task = 0;
@@ -234,6 +255,14 @@ static void idle(void) {
    }
 }
 
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
+//    sched_start()
+//       Enter scheduled execution for the first time.
+//       This should be called once after at least one task has been started.
+//       It picks the first runnable task and transfers control to it.
+//------------------------------------------------------------------------------
 void sched_start(void) {
    struct task* task = task_list_pick();
 
@@ -245,31 +274,6 @@ void sched_start(void) {
    thread_switch(&g_sched_ctx, &task->ctx);
 
    UNREACHABLE();
-}
-
-void task_start(const char* name, void (*entry)(void)) {
-   int i;
-   struct task* slot = 0;
-
-   ASSERT_MSG(name != 0, "task_start: null name\n");
-   ASSERT_MSG(entry != 0, "task_start: null entry\n");
-
-   for (i = 0; i < MAX_TASKS; i++) {
-      if (g_task_pool[i].state == TASK_UNUSED) {
-         slot = &g_task_pool[i];
-         break;
-      }
-   }
-
-   ASSERT_MSG(slot != 0, "task_start: no free task slots\n");
-
-   task_init(slot,
-             name,
-             entry,
-             g_task_stacks[i],
-             TASK_STACK_SIZE);
-
-   task_list_add(slot);
 }
 
 void task_sleep(int ticks) {
