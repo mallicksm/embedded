@@ -56,6 +56,11 @@ void task_init(struct task* task,
                uint32_t stack_size) {
    uint32_t stack_top;
 
+   ASSERT_MSG(task != 0, "task_init: null task\n");
+   ASSERT_MSG(name != 0, "task_init: null name\n");
+   ASSERT_MSG(entry != 0, "task_init: null entry\n");
+   ASSERT_MSG(stack_base != 0, "task_init: null stack\n");
+
    task->name = name;
    task->entry = entry;
    task->stack_base = stack_base;
@@ -84,6 +89,8 @@ void task_init(struct task* task,
 }
 
 static void task_trampoline(void) {
+   ASSERT_MSG(g_current_task != 0, "trampoline: no current task\n");
+
    g_current_task->entry();
    task_exit();
 
@@ -167,10 +174,7 @@ void task_yield(void) {
 void task_exit(void) {
    struct task* dead = g_current_task;
 
-   if (dead == 0) {
-      for (;;)
-         ;
-   }
+   ASSERT_MSG(dead != 0, "exit: no current task\n");
 
    // Pick next BEFORE removing self
    struct task* next = task_list_pick();
@@ -179,18 +183,14 @@ void task_exit(void) {
    dead->state = TASK_UNUSED;
 
    // At least one task (idle) is always RUNNABLE
-   if (next == 0) {
-      for (;;)
-         ;
-   }
+   ASSERT_MSG(next != 0, "exit: no runnable task\n");
 
    g_current_task = next;
    next->state = TASK_RUNNING;
 
    thread_switch(&dead->ctx, &next->ctx);
 
-   for (;;)
-      ;
+   UNREACHABLE();
 }
 
 //------------------------------------------------------------------------------
@@ -219,10 +219,12 @@ static void idle(void);
 void sched_init(void) {
    g_current_task = 0;
    g_first_task = 0;
+
    for (int i = 0; i < MAX_TASKS; i++) {
       g_task_pool[i].state = TASK_UNUSED;
       g_task_pool[i].next = 0;
    }
+
    task_start("idle", idle);
 }
 
@@ -235,27 +237,22 @@ static void idle(void) {
 void sched_start(void) {
    struct task* task = task_list_pick();
 
-   if (task == 0) {
-      for (;;)
-         ;
-   }
+   ASSERT_MSG(task != 0, "sched_start: no runnable task\n");
 
    task->state = TASK_RUNNING;
    g_current_task = task;
 
    thread_switch(&g_sched_ctx, &task->ctx);
 
-   for (;;)
-      ;
+   UNREACHABLE();
 }
 
 void task_start(const char* name, void (*entry)(void)) {
    int i;
    struct task* slot = 0;
 
-   if (name == 0 || entry == 0) {
-      return;
-   }
+   ASSERT_MSG(name != 0, "task_start: null name\n");
+   ASSERT_MSG(entry != 0, "task_start: null entry\n");
 
    for (i = 0; i < MAX_TASKS; i++) {
       if (g_task_pool[i].state == TASK_UNUSED) {
@@ -264,9 +261,7 @@ void task_start(const char* name, void (*entry)(void)) {
       }
    }
 
-   if (slot == 0) {
-      return;
-   }
+   ASSERT_MSG(slot != 0, "task_start: no free task slots\n");
 
    task_init(slot,
              name,
@@ -278,6 +273,8 @@ void task_start(const char* name, void (*entry)(void)) {
 }
 
 void task_sleep(int ticks) {
+   ASSERT_MSG(g_current_task != 0, "sleep: no current task\n");
+
    g_current_task->sleep_ticks = ticks;
    g_current_task->state = TASK_SLEEPING;
 
@@ -303,6 +300,7 @@ void sched_tick(void) {
       t = t->next;
    } while (t != g_first_task);
 }
+
 //------------------------------------------------------------------------------
 // Task pool methods
 //
@@ -335,17 +333,8 @@ static struct task* task_list_pick(void) {
    if (g_first_task == 0)
       return 0;
 
-   // Task selection (circular run queue)
-   //   - Tasks are stored in a circular singly-linked ring (task->next)
-   //       * Single-task case: next points to itself
-   //   - Choose scan starting point:
-   //       * If a task is currently running → start at current->next
-   //       * If no current task (boot)      → start at g_first_task
-   //   - If no runnable task is found → return 0 (should never happen as cli is immortal)
-
    start = (g_current_task != 0) ? g_current_task->next : g_first_task;
-   if (start == 0)
-      return 0;
+   ASSERT_MSG(start != 0, "pick: broken task list\n");
 
    t = start;
    do {
@@ -359,6 +348,8 @@ static struct task* task_list_pick(void) {
 
 static void task_list_add(struct task* task) {
    struct task* p;
+
+   ASSERT_MSG(task != 0, "add: null task\n");
 
    if (g_first_task == 0) {
       g_first_task = task;
@@ -378,9 +369,8 @@ static void task_list_add(struct task* task) {
 static void task_list_remove(struct task* task) {
    struct task* p;
 
-   if (g_first_task == 0 || task == 0) {
-      return;
-   }
+   ASSERT_MSG(task != 0, "remove: null task\n");
+   ASSERT_MSG(g_first_task != 0, "remove: empty list\n");
 
    if (g_first_task == task && g_first_task->next == g_first_task) {
       g_first_task = 0;
@@ -393,9 +383,7 @@ static void task_list_remove(struct task* task) {
       p = p->next;
    }
 
-   if (p->next != task) {
-      return;
-   }
+   ASSERT_MSG(p->next == task, "remove: task not in list\n");
 
    p->next = task->next;
 
