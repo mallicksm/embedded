@@ -25,7 +25,7 @@ SECTIONS
       __cmds_end = .;
    } > RAM
 
-   .cmds : ALIGN(8)
+   .tasks : ALIGN(8)
    {
       __tasks_start = .;
       KEEP(*(.tasks))

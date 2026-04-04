@@ -1,11 +1,14 @@
 .section .text
 .globl trap_entry
 .type trap_entry, @function
-
 trap_entry:
+   .cfi_startproc
    addi sp, sp, -48
+   .cfi_def_cfa_offset 48
 
    sw ra,  0(sp)
+   .cfi_offset ra, 0
+
    sw t0,  4(sp)
    sw t1,  8(sp)
    sw t2, 12(sp)
@@ -34,4 +37,7 @@ trap_entry:
    lw a7, 44(sp)
 
    addi sp, sp, 48
+   .cfi_def_cfa_offset 0
+
    mret
+   .cfi_endproc

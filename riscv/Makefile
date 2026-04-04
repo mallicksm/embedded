@@ -35,6 +35,7 @@ LDFLAGS := \
 
 SRCS := crt0.S \
          thread_switch.S \
+         trap_entry.S \
          main.c \
          uart.c \
          cmds.c \
@@ -43,7 +44,8 @@ SRCS := crt0.S \
          string.c \
          cli.c \
          proc.c \
-         tasks.c
+         tasks.c \
+         trap.c
 
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
@@ -67,7 +69,7 @@ $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
 $(TARGET).lst: $(TARGET).elf
-	$(OBJDUMP) -d -S $< > $@
+	$(OBJDUMP) -S -d $< 2>&1 | grep -v "address range table" > $@ ; true
 
 $(TARGET).info: $(TARGET).elf
 	$(READELF) -a $(TARGET).elf > $@
