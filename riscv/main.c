@@ -4,7 +4,7 @@
 
 int main(void) {
    sched_init();
-   task_cli();
+   task_start("cli", run_cli);
    sched_start();
 
    for (;;)

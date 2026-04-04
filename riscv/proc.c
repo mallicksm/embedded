@@ -1,3 +1,4 @@
+#include "k.h"
 #include "proc.h"
 
 #define MAX_TASKS 64
@@ -85,8 +86,8 @@ void task_init(struct task* task,
 static void task_trampoline(void) {
    g_current_task->entry();
    task_exit();
-   for (;;)
-      ;
+
+   UNREACHABLE();
 }
 
 //------------------------------------------------------------------------------
@@ -117,15 +118,16 @@ void task_yield(void) {
    struct task* next;
 
    current = g_current_task;
-   if (current == 0) {
-      return;
-   }
+   ASSERT_MSG(current != 0, "yield: no current task\n");
 
    next = task_list_pick();
-   if (next == 0 || next == current) {
+   ASSERT_MSG(next != 0, "yield: no runnable task\n");
+
+   if (next == current) {
       return;
    }
 
+   // only downgrade if still running
    if (current->state == TASK_RUNNING) {
       current->state = TASK_RUNNABLE;
    }
@@ -135,6 +137,7 @@ void task_yield(void) {
 
    thread_switch(&current->ctx, &next->ctx);
 
+   // resumed here
    g_current_task = current;
    current->state = TASK_RUNNING;
 }
@@ -155,7 +158,7 @@ void task_yield(void) {
 //    - Switches execution to the selected task
 //
 // System invariant:
-//    At least one runnable task (CLI) must always exist.
+//    At least one task (idle) is always RUNNABLE
 //    If no runnable task is found, the system halts.
 //
 // Control-flow story:
@@ -175,7 +178,7 @@ void task_exit(void) {
    task_list_remove(dead);
    dead->state = TASK_UNUSED;
 
-   // System invariant: at least one task must exist (CLI)
+   // At least one task (idle) is always RUNNABLE
    if (next == 0) {
       for (;;)
          ;
@@ -212,12 +215,20 @@ void task_exit(void) {
 //
 // These functions are part of the public task/scheduler API.
 //------------------------------------------------------------------------------
+static void idle(void);
 void sched_init(void) {
    g_current_task = 0;
    g_first_task = 0;
    for (int i = 0; i < MAX_TASKS; i++) {
       g_task_pool[i].state = TASK_UNUSED;
       g_task_pool[i].next = 0;
+   }
+   task_start("idle", idle);
+}
+
+static void idle(void) {
+   while (1) {
+      task_yield();
    }
 }
 
@@ -273,8 +284,7 @@ void task_sleep(int ticks) {
    task_yield();
 }
 
-void sched_tick(void)
-{
+void sched_tick(void) {
    struct task* t;
 
    if (g_first_task == 0) {
@@ -325,11 +335,14 @@ static struct task* task_list_pick(void) {
    if (g_first_task == 0)
       return 0;
 
-   /*
-    * Circular ring: task->next (single-task ring: next points to self).
-    * Start after current when there is one; otherwise from list head.
-    * Return the first TASK_RUNNABLE found; skip TASK_RUNNING / others.
-    */
+   // Task selection (circular run queue)
+   //   - Tasks are stored in a circular singly-linked ring (task->next)
+   //       * Single-task case: next points to itself
+   //   - Choose scan starting point:
+   //       * If a task is currently running → start at current->next
+   //       * If no current task (boot)      → start at g_first_task
+   //   - If no runnable task is found → return 0 (should never happen as cli is immortal)
+
    start = (g_current_task != 0) ? g_current_task->next : g_first_task;
    if (start == 0)
       return 0;
@@ -339,7 +352,7 @@ static struct task* task_list_pick(void) {
       if (t->state == TASK_RUNNABLE)
          return t;
       t = t->next;
-   } while (t != start && t != 0);
+   } while (t != start);
 
    return 0;
 }

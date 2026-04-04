@@ -1,3 +1,3 @@
 #pragma once
 
-void task_cli(void);
+void run_cli(void);

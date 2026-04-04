@@ -126,7 +126,3 @@ void run_cli(void) {
       }
    }
 }
-
-void task_cli(void) {
-   task_start("cli", run_cli);
-}

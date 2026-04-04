@@ -1,5 +1,6 @@
 #include "stdlib.h"
 
+// (+, -) sign not implemented
 unsigned long strtoul(const char* nptr, char** endptr, int base) {
    const char* s = nptr;
    unsigned long result = 0;
