@@ -127,34 +127,6 @@ struct task {
 void thread_switch(struct thread_context* old,
                    struct thread_context* new);
 
-//------------------------------------------------------------------------------
-// Initialize a new task (never run before)
-//
-// Called by: task_start()
-//
-// What it does:
-//    - Sets up the Task Control Block (TCB)
-//    - Assigns stack memory and initializes stack pointer (sp)
-//    - Stores entry function (task entry point)
-//    - Prepares initial CPU context:
-//         * ra → task_trampoline()   (what executes when entry returns)
-//         * sp → top of task stack
-//    - Marks task as RUNNABLE
-//
-// Control-flow model:
-//    This does NOT start execution.
-//
-//    The task is inserted into the scheduler queue. On first schedule:
-//       thread_switch() restores this context →
-//       execution begins at entry() with a valid stack.
-//
-//    If entry() ever returns:
-//       control flows into task_trampoline() (never back to scheduler directly)
-//
-// Why trampoline exists:
-//    Prevents falling off the stack and gives a controlled place
-//    to handle task exit (cleanup, loop, or panic).
-//------------------------------------------------------------------------------
 void task_init(struct task* task,
                const char* name,
                void (*entry)(void),
@@ -164,107 +136,32 @@ void task_init(struct task* task,
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------
-// Yield the CPU voluntarily from the current task.
-//
-// Called by: the currently running task.
-//
-// What it does:
-//    If another runnable task exists:
-//       - Saves the current task's CPU context
-//       - Selects the next runnable task
-//       - Switches execution to that task
-//
-//    If no other runnable task exists, or if the scheduler selects the
-//    current task again, this function returns immediately.
-//
-// Control-flow story:
-//    From the task's point of view, execution resumes at the instruction
-//    immediately following task_yield() when this task is scheduled again.
-//
-//    Although task_yield() may transfer control to other tasks, the calling
-//    task observes it as a simple function call that eventually returns.
-//------------------------------------------------------------------------------
 void task_yield(void);
 
 //------------------------------------------------------------------------------
 // public
-//------------------------------------------------------------------------------
-// Terminate the current task.
-//
-// Called by:
-//    - The currently running task (explicit exit)
-//    - task_trampoline() after the task entry function returns
-//
-// What it does:
-//    - Selects the next runnable task
-//    - Removes the current task from the runnable list
-//    - Marks it UNUSED
-//    - Switches execution to the selected task
-//
-// System invariant:
-//    At least one runnable task (CLI) must always exist.
-//    If no runnable task is found, the system halts.
-//
-// Control-flow story:
-//    The current task never resumes execution after calling task_exit().
 //------------------------------------------------------------------------------
 void task_exit(void);
 
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------
-// Initialize the scheduler and task subsystem.
-//
-// Called by: system initialization (once at boot)
-//
-// What it does:
-//    - Clears current task pointer
-//    - Resets the runnable task list to empty
-//    - Marks all task slots as UNUSED
-//
-// Control-flow model:
-//    After this call, no tasks exist and the scheduler is idle.
-//    Tasks must be created via task_start() before calling sched_start().
-//------------------------------------------------------------------------------
 void sched_init(void);
 
 //------------------------------------------------------------------------------
 // public
-//------------------------------------------------------------------------------
-// Start task scheduling.
-//
-// Called by:
-//    boot/main after at least one runnable task exists.
-//
-// What it does:
-//    Selects the first runnable task (CLI) and transfers control to it.
-//
-// Control-flow story:
-//    One-way handoff. Does not return.
 //------------------------------------------------------------------------------
 void sched_start(void);
 
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------
-// Create and register a new runnable task instance.
-//
-// Called by:
-//    boot or running tasks to introduce new work into the system.
-//
-// What it does:
-//    - Allocates an unused slot from the task pool
-//    - Initializes the task (name, entry, stack, context)
-//    - Links the task into the runnable list
-//
-// Notes:
-//    Each call creates a new live instance of the task entry function.
-//    Multiple instances of the same task body may exist simultaneously.
-//
-// Control-flow story:
-//    The task is not executed immediately. It becomes eligible for scheduling
-//    and will run when selected by the scheduler.
-//------------------------------------------------------------------------------
 void task_start(const char* name, void (*entry)(void));
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 void task_sleep(int);
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 void sched_tick(void);
