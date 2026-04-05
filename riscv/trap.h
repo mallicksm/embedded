@@ -5,7 +5,7 @@
 
 typedef enum {
    SCHED_COOP = 0,
-   SCHED_PREEMPT = 1,
+   SCHED_PREE = 1,
 } sched_mode_t;
 
 void timer_set(uint32_t);

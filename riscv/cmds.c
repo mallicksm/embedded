@@ -148,17 +148,25 @@ REGISTER_CMD("tick", cmd_tick);
 volatile sched_mode_t g_sched_mode = SCHED_COOP;
 
 static int cmd_sched(int argc, char** argv) {
-   if (argc == 2 && !strcmp(argv[1], "coop")) {
-      g_sched_mode = SCHED_COOP;
-      printf("Active: coop");
-   } else if (argc == 2 && !strcmp(argv[1], "preempt")) {
-      g_sched_mode = SCHED_PREEMPT;
-      printf("Active: preempt");
-   } else {
+   if (argc == 1) {
       if (g_sched_mode == SCHED_COOP)
          printf("Current: coop\n");
+      else if (g_sched_mode == SCHED_PREE)
+         printf("Current: pree");
       else
-         printf("Current: preempt\n");
+         return 0;
+   } else if (argc == 2) {
+      if (!strcmp(argv[1], "coop")) {
+         g_sched_mode = SCHED_COOP;
+         printf("Active: coop");
+      } else if (!strcmp(argv[1], "pree")) {
+         g_sched_mode = SCHED_PREE;
+         printf("Active: pree");
+      } else {
+         return 0;
+      }
+   } else {
+      return 0;
    }
    return 0;
 }

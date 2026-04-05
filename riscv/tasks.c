@@ -2,32 +2,25 @@
 #include "printf.h"
 #include "proc.h"
 
-void run_a(void) {
-   for (;;) {
-      printf("Task:a\n");
-      task_yield();
+DEFINE_TASK(a, TASK_COOP);
+DEFINE_TASK(b, TASK_COOP);
+DEFINE_TASK(i, TASK_PREE);
+DEFINE_TASK(j, TASK_PREE);
+void run_slow(void) {
+   while (1) {
+      for (volatile int i = 0; i < 1000000; i++);
+      printf("L");
    }
 }
+REGISTER_TASK("slow", run_slow);
 
-REGISTER_TASK("a", run_a);
-
-void run_b(void) {
-   for (;;) {
-      printf("Task:b\n");
-      task_yield();
+void run_sleeper(void) {
+   while (1) {
+      printf("S");
+      task_sleep(50);
    }
 }
-
-REGISTER_TASK("b", run_b);
-
-void run_c(void) {
-   for (int i = 0; i < 100000; i++) {
-      printf("Task:c\n");
-      task_yield();
-   }
-}
-
-REGISTER_TASK("c", run_c);
+REGISTER_TASK("sleeper", run_sleeper);
 
 void run_worker() {
    printf("A\n");
@@ -37,5 +30,4 @@ void run_worker() {
    while (1)
       task_yield();
 }
-
 REGISTER_TASK("worker", run_worker);

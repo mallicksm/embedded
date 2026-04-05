@@ -69,7 +69,7 @@ void trap_handler(void) {
          timer_set(TIMER_INTERVAL);
          sched_tick();
 
-         if ((g_sched_mode == SCHED_PREEMPT) && g_current_task) {
+         if ((g_sched_mode == SCHED_PREE) && g_current_task) {
             task_yield();
          }
 
