@@ -227,6 +227,19 @@ void task_exit(void) {
    UNREACHABLE();
 }
 
+void task_sleep(int ticks) {
+   ASSERT_MSG(g_current_task != 0, "sleep: no current task\n");
+
+   g_current_task->sleep_ticks = ticks;
+   g_current_task->state = TASK_SLEEPING;
+
+   task_yield();
+}
+
+int task_getpid(void) {
+   ASSERT_MSG(g_current_task != 0, "getpid: no current task\n");
+   return g_current_task - g_task_pool;
+}
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------
@@ -274,15 +287,6 @@ void sched_start(void) {
    thread_switch(&g_sched_ctx, &task->ctx);
 
    UNREACHABLE();
-}
-
-void task_sleep(int ticks) {
-   ASSERT_MSG(g_current_task != 0, "sleep: no current task\n");
-
-   g_current_task->sleep_ticks = ticks;
-   g_current_task->state = TASK_SLEEPING;
-
-   task_yield();
 }
 
 void sched_tick(void) {

@@ -133,7 +133,8 @@ void thread_switch(struct thread_context* old,
 void task_start(const char* name, void (*entry)(void));
 void task_yield(void);
 void task_exit(void);
+void task_sleep(int);
+int task_getpid(void);
 void sched_init(void);
 void sched_start(void);
-void task_sleep(int);
 void sched_tick(void);
