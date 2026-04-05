@@ -3,7 +3,7 @@
 #include "cmds.h"
 #include "printf.h"
 #include "stdlib.h"
-#include "tasks.h"
+#include "progs.h"
 #include "string.h"
 #include "proc.h"
 #include "trap.h"

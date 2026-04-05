@@ -44,7 +44,7 @@ SRCS := crt0.S \
          string.c \
          cli.c \
          proc.c \
-         tasks.c \
+         progs.c \
          trap.c
 
 OBJS := $(SRCS:.c=.o)
