@@ -12,10 +12,10 @@ struct tasks {
 extern const struct tasks __tasks_start[];
 extern const struct tasks __tasks_end[];
 
-#define TASK_COOP   0
-#define TASK_PREE   1
+#define TASK_COOP 0
+#define TASK_PREE 1
 #define DEFINE_PROG(name, type)                         \
-   void run_##name(void) {                              \
+   void prog_##name(void) {                             \
       for (;;) {                                        \
          printf("Task (%s):" #name "\n",                \
                 (type) == TASK_COOP ? "coop" : "pree"); \
@@ -24,4 +24,4 @@ extern const struct tasks __tasks_end[];
          }                                              \
       }                                                 \
    }                                                    \
-   REGISTER_PROG(#name, run_##name)
+   REGISTER_PROG(#name, prog_##name)

@@ -1,3 +1,3 @@
 #pragma once
 
-void run_cli(void);
+void prog_cli(void);

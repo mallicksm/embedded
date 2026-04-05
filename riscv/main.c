@@ -5,7 +5,7 @@
 
 int main(void) {
    sched_init();
-   task_spawn("cli", run_cli);
+   task_spawn("cli", prog_cli);
    trap_enable();
    sched_start();
 
