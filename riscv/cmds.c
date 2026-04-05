@@ -85,29 +85,6 @@ static int cmd_mwr(int argc, char** argv) {
 
 REGISTER_CMD("mwr", cmd_mwr);
 
-int cmd_run(int argc, char** argv) {
-   const struct progs* prog;
-
-   if (argc != 2) {
-      printf("usage: run <prog>\n");
-      return -1;
-   }
-
-   prog = __progs_start;
-   while (prog < __progs_end) {
-      if (strcmp(prog->name, argv[1]) == 0) {
-         task_spawn(prog->name, prog->fn);
-         return 0;
-      }
-      prog++;
-   }
-
-   printf("Unknown prog: %s\n", argv[1]);
-   return -1;
-}
-
-REGISTER_CMD("run", cmd_run);
-
 extern struct task* g_first_task;
 int cmd_ps(int argc, char** argv) {
    (void)argc;

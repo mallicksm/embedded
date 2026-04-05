@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "uart.h"
 #include "cmds.h"
+#include "progs.h"
 #include "proc.h"
 #include "printf.h"
 #include "string.h"
@@ -46,7 +47,7 @@ static int cli_tokenize(char* buf, char** argv, int max_args) {
    return argc;
 }
 
-static const struct cmds* cli_find(const char* name) {
+static const struct cmds* cmd_find(const char* name) {
    const struct cmds* cmd = __cmds_start;
 
    while (cmd < __cmds_end) {
@@ -55,7 +56,18 @@ static const struct cmds* cli_find(const char* name) {
       }
       cmd++;
    }
+   return 0;
+}
+static const struct progs* prog_find(const char* name) {
+   const struct progs* prog;
 
+   prog = __progs_start;
+   while (prog < __progs_end) {
+      if (strcmp(prog->name, name) == 0) {
+         return prog;
+      }
+      prog++;
+   }
    return 0;
 }
 
@@ -63,20 +75,25 @@ static const struct cmds* cli_find(const char* name) {
 static void cli_exec(char* buf) {
    char* argv[MAX_ARGS];
    int argc;
-   const struct cmds* cmd;
 
    argc = cli_tokenize(buf, argv, MAX_ARGS);
    if (argc == 0) {
       return;
    }
 
-   cmd = cli_find(argv[0]);
-   if (cmd == 0) {
-      printf("Unknown command: %s\n", argv[0]);
+   const struct cmds* cmd = cmd_find(argv[0]);
+   if (cmd) {
+      cmd->fn(argc, argv);
       return;
    }
 
-   cmd->fn(argc, argv);
+   const struct progs* prog = prog_find(argv[0]);
+   if (prog) {
+      task_spawn(prog->name, prog->fn);
+      return;
+   }
+
+   printf("Unknown command: %s\n", argv[0]);
 }
 
 //------------------------------------------------------------------------------
