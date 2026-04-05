@@ -1,6 +1,26 @@
+#include "k.h"
 #include "stdlib.h"
 
 // (+, -) sign not implemented
+int atoi(const char* s) {
+   int x = 0;
+
+   ASSERT_MSG(s != 0, "atoi: null string\n");
+   ASSERT_MSG(*s != 0, "atoi: empty string\n");
+
+   while (*s) {
+      unsigned c = (unsigned)(*s - '0');
+
+      if (c > 9) {
+         return -1;   // invalid
+      }
+
+      x = x * 10 + (int)c;
+      s++;
+   }
+
+   return x;
+}
 unsigned long strtoul(const char* nptr, char** endptr, int base) {
    const char* s = nptr;
    unsigned long result = 0;

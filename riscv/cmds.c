@@ -1,3 +1,4 @@
+#include "k.h"
 #include <stdint.h>
 #include "uart.h"
 #include "cmds.h"
@@ -7,6 +8,7 @@
 #include "string.h"
 #include "proc.h"
 #include "trap.h"
+#include "stdlib.h"
 
 static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;
@@ -125,27 +127,57 @@ REGISTER_CMD("tick", cmd_tick);
 volatile sched_mode_t g_sched_mode = SCHED_COOP;
 
 static int cmd_sched(int argc, char** argv) {
+   ASSERT_MSG(argc > 0, "sched: bad argc\n");
+
    if (argc == 1) {
-      if (g_sched_mode == SCHED_COOP)
+      if (g_sched_mode == SCHED_COOP) {
          printf("Current: coop\n");
-      else if (g_sched_mode == SCHED_PREE)
-         printf("Current: pree");
-      else
-         return 0;
-   } else if (argc == 2) {
-      if (!strcmp(argv[1], "coop")) {
-         g_sched_mode = SCHED_COOP;
-         printf("Active: coop");
-      } else if (!strcmp(argv[1], "pree")) {
-         g_sched_mode = SCHED_PREE;
-         printf("Active: pree");
+      } else if (g_sched_mode == SCHED_PREE) {
+         printf("Current: pree\n");
       } else {
-         return 0;
+         ASSERT_MSG(0, "sched: invalid mode\n");
       }
-   } else {
       return 0;
    }
+
+   if (argc == 2) {
+      if (!strcmp(argv[1], "coop")) {
+         g_sched_mode = SCHED_COOP;
+         printf("Active: coop\n");
+         return 0;
+      }
+
+      if (!strcmp(argv[1], "pree")) {
+         g_sched_mode = SCHED_PREE;
+         printf("Active: pree\n");
+         return 0;
+      }
+
+      printf("Unknown mode: %s\n", argv[1]);
+      return 0;
+   }
+
+   printf("Usage: sched [coop|pree]\n");
    return 0;
 }
-
 REGISTER_CMD("sched", cmd_sched);
+
+static int cmd_kill(int argc, char** argv) {
+   int pid;
+
+   if (argc != 2) {
+      printf("Usage: kill <pid>\n");
+      return 0;
+   }
+
+   pid = atoi(argv[1]);
+
+   if (task_kill(pid) < 0) {
+      printf("kill: invalid pid %d\n", pid);
+      return 0;
+   }
+
+   printf("killed %d\n", pid);
+   return 0;
+}
+REGISTER_CMD("kill", cmd_kill);

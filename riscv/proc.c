@@ -240,6 +240,45 @@ int task_getpid(void) {
    ASSERT_MSG(g_current_task != 0, "getpid: no current task\n");
    return g_current_task - g_task_pool;
 }
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+static struct task* task_by_pid(int);
+int task_kill(int pid) {
+   struct task* t;
+
+   t = task_by_pid(pid);
+   if (t == 0) {
+      return -1;
+   }
+
+   // do not allow killing idle (pid 0 typically)
+   ASSERT_MSG(t != 0, "kill: null task\n");
+
+   // self-kill → reuse existing path
+   if (t == g_current_task) {
+      task_exit();
+      UNREACHABLE();
+   }
+
+   // remove from scheduler
+   task_list_remove(t);
+   t->state = TASK_UNUSED;
+
+   return 0;
+}
+static struct task* task_by_pid(int pid) {
+   if (pid < 0 || pid >= MAX_TASKS) {
+      return 0;
+   }
+
+   if (g_task_pool[pid].state == TASK_UNUSED) {
+      return 0;
+   }
+
+   return &g_task_pool[pid];
+}
+
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------

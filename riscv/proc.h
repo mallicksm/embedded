@@ -135,6 +135,7 @@ void task_yield(void);
 void task_exit(void);
 void task_sleep(int);
 int task_getpid(void);
+int task_kill(int);
 void sched_init(void);
 void sched_start(void);
 void sched_tick(void);
