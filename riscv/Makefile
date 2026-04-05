@@ -52,15 +52,11 @@ OBJS := $(OBJS:.S=.o)
 
 all: clean $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
 
-thread_switch.o: thread_switch.S
-   # Special rules for thread_switch.S
-	$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
-
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.S
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
 
 $(TARGET).elf: $(OBJS) linker.ld
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
@@ -69,7 +65,7 @@ $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
 $(TARGET).lst: $(TARGET).elf
-	$(OBJDUMP) -S -d $< 2>&1 | grep -v "address range table" > $@ ; true
+	$(OBJDUMP) -S -d $< > $@
 
 $(TARGET).info: $(TARGET).elf
 	$(READELF) -a $(TARGET).elf > $@

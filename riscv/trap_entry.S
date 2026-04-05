@@ -1,6 +1,7 @@
 .section .text
 .globl trap_entry
 .type trap_entry, @function
+
 trap_entry:
    addi sp, sp, -48
 
@@ -36,3 +37,5 @@ trap_entry:
    addi sp, sp, 48
 
    mret
+
+.size trap_entry, .-trap_entry
