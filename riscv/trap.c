@@ -55,6 +55,7 @@ void trap_enable(void) {
 // Control-flow:
 //    Returns back to interrupted context via mret (in trap_entry.S).
 //------------------------------------------------------------------------------
+extern struct task* g_current_task;
 void trap_handler(void) {
    uint32_t cause = CSR_READ(mcause);
 
@@ -64,6 +65,9 @@ void trap_handler(void) {
       if (irq == 7) {
          timer_set();
          sched_tick();
+
+         if (g_current_task)
+            task_yield();
          return;
       }
 
