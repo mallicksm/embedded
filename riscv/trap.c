@@ -1,7 +1,7 @@
 #include "k.h"
 #include "proc.h"
 
-#define TIMER_INTERVAL 100000   // adjust for your platform
+#define TIMER_INTERVAL 10000000 // adjust for your platform
 
 void timer_set(void) {
    uint64_t now = *MTIME;
