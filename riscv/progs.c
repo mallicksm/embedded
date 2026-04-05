@@ -2,10 +2,10 @@
 #include "printf.h"
 #include "proc.h"
 
-DEFINE_PROG(a, TASK_COOP);
-DEFINE_PROG(b, TASK_COOP);
-DEFINE_PROG(i, TASK_PREE);
-DEFINE_PROG(j, TASK_PREE);
+DEFINE_PROG(a, PROG_COOP);
+DEFINE_PROG(b, PROG_COOP);
+DEFINE_PROG(i, PROG_PREE);
+DEFINE_PROG(j, PROG_PREE);
 void prog_slow(void) {
    while (1) {
       for (volatile int i = 0; i < 10000000; i++)

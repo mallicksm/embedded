@@ -25,11 +25,11 @@ SECTIONS
       __cmds_end = .;
    } > RAM
 
-   .tasks : ALIGN(8)
+   .progs : ALIGN(8)
    {
-      __tasks_start = .;
-      KEEP(*(.tasks))
-      __tasks_end = .;
+      __progs_start = .;
+      KEEP(*(.progs))
+      __progs_end = .;
    } > RAM
 
    .data : ALIGN(4)

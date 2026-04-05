@@ -86,23 +86,23 @@ static int cmd_mwr(int argc, char** argv) {
 REGISTER_CMD("mwr", cmd_mwr);
 
 int cmd_run(int argc, char** argv) {
-   const struct tasks* task;
+   const struct progs* prog;
 
    if (argc != 2) {
-      printf("usage: run <task>\n");
+      printf("usage: run <prog>\n");
       return -1;
    }
 
-   task = __tasks_start;
-   while (task < __tasks_end) {
-      if (strcmp(task->name, argv[1]) == 0) {
-         task_spawn(task->name, task->fn);
+   prog = __progs_start;
+   while (prog < __progs_end) {
+      if (strcmp(prog->name, argv[1]) == 0) {
+         task_spawn(prog->name, prog->fn);
          return 0;
       }
-      task++;
+      prog++;
    }
 
-   printf("Unknown task: %s\n", argv[1]);
+   printf("Unknown prog: %s\n", argv[1]);
    return -1;
 }
 
