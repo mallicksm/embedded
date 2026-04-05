@@ -130,7 +130,7 @@ void thread_switch(struct thread_context* old,
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------
-void task_start(const char* name, void (*entry)(void));
+void task_spawn(const char* name, void (*entry)(void));
 void task_yield(void);
 void task_exit(void);
 void task_sleep(int);

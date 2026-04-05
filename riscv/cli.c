@@ -2,7 +2,7 @@
 // System model:
 //
 //   - CLI is the primary OS task and is started at boot.
-//   - User tasks are registered via REGISTER_TASK() and started via CLI.
+//   - User tasks are registered via REGISTER_PROG() and started via CLI.
 //   - At least one task (CLI) must always remain runnable.
 //------------------------------------------------------------------------------
 #include <stdint.h>

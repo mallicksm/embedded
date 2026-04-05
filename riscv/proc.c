@@ -106,7 +106,7 @@ static void task_trampoline(void) {
 //       context, records its stack and entry point, and adds it to the task
 //       pool so the scheduler may later run it.
 //
-void task_start(const char* name, void (*entry)(void)) {
+void task_spawn(const char* name, void (*entry)(void)) {
    int i;
    struct task* slot = 0;
 
@@ -259,7 +259,7 @@ void sched_init(void) {
       g_task_pool[i].next = 0;
    }
 
-   task_start("idle", idle);
+   task_spawn("idle", idle);
 }
 
 static void idle(void) {

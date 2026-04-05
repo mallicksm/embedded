@@ -2,10 +2,10 @@
 #include "printf.h"
 #include "proc.h"
 
-DEFINE_TASK(a, TASK_COOP);
-DEFINE_TASK(b, TASK_COOP);
-DEFINE_TASK(i, TASK_PREE);
-DEFINE_TASK(j, TASK_PREE);
+DEFINE_PROG(a, TASK_COOP);
+DEFINE_PROG(b, TASK_COOP);
+DEFINE_PROG(i, TASK_PREE);
+DEFINE_PROG(j, TASK_PREE);
 void run_slow(void) {
    while (1) {
       for (volatile int i = 0; i < 10000000; i++)
@@ -13,7 +13,7 @@ void run_slow(void) {
       printf("L%d", task_getpid());
    }
 }
-REGISTER_TASK("slow", run_slow);
+REGISTER_PROG("slow", run_slow);
 
 void run_sleeper(void) {
    while (1) {
@@ -21,7 +21,7 @@ void run_sleeper(void) {
       task_sleep(50);
    }
 }
-REGISTER_TASK("sleeper", run_sleeper);
+REGISTER_PROG("sleeper", run_sleeper);
 
 void run_worker() {
    printf("A\n");
@@ -31,4 +31,4 @@ void run_worker() {
    while (1)
       task_yield();
 }
-REGISTER_TASK("worker", run_worker);
+REGISTER_PROG("worker", run_worker);

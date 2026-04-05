@@ -5,7 +5,7 @@ struct tasks {
    void (*fn)(void);
 };
 
-#define REGISTER_TASK(_name, _fn)          \
+#define REGISTER_PROG(_name, _fn)          \
    static const struct tasks __tasks_##_fn \
       __attribute__((used, section(".tasks"))) = {(_name), (_fn)}
 
@@ -14,7 +14,7 @@ extern const struct tasks __tasks_end[];
 
 #define TASK_COOP   0
 #define TASK_PREE   1
-#define DEFINE_TASK(name, type)                         \
+#define DEFINE_PROG(name, type)                         \
    void run_##name(void) {                              \
       for (;;) {                                        \
          printf("Task (%s):" #name "\n",                \
@@ -24,4 +24,4 @@ extern const struct tasks __tasks_end[];
          }                                              \
       }                                                 \
    }                                                    \
-   REGISTER_TASK(#name, run_##name)
+   REGISTER_PROG(#name, run_##name)
