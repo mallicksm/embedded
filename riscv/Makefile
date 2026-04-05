@@ -81,7 +81,7 @@ run: $(TARGET).elf
       -S -gdb tcp::1234
 
 puart:
-	@echo "Welcome TMOS \"Task Manager OS\" Console"
+	@echo "Welcome AITMOS \"Task Manager OS\" Console"
 	@echo "Ctrl + ] to exit"
 	@socat -,raw,echo=0,escape=0x1d tcp:localhost:4444
 

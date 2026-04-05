@@ -6,6 +6,7 @@
 #include "tasks.h"
 #include "string.h"
 #include "proc.h"
+#include "trap.h"
 
 static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;
@@ -113,13 +114,13 @@ int cmd_ps(int argc, char** argv) {
    (void)argv;
    struct task* t = g_first_task;
 
-   printf("NAME\tSTATE\tSLEEP\n");
+   printf("NAME\tSTATE   \tSLEEP\n");
 
    do {
       printf("%s\t", t->name);
 
       if (t->state == TASK_RUNNING)
-         printf("RUNNING\t");
+         printf("RUNNING \t");
       else if (t->state == TASK_RUNNABLE)
          printf("RUNNABLE\t");
       else if (t->state == TASK_SLEEPING)
@@ -135,11 +136,31 @@ int cmd_ps(int argc, char** argv) {
 REGISTER_CMD("ps", cmd_ps);
 
 /* cmds.c */
-static int cmd_tick(int argc, char** argv)
-{
+static int cmd_tick(int argc, char** argv) {
    (void)argc;
    (void)argv;
    sched_tick();
    return 0;
 }
+
 REGISTER_CMD("tick", cmd_tick);
+
+volatile sched_mode_t g_sched_mode = SCHED_COOP;
+
+static int cmd_sched(int argc, char** argv) {
+   if (argc == 2 && !strcmp(argv[1], "coop")) {
+      g_sched_mode = SCHED_COOP;
+      printf("Active: coop");
+   } else if (argc == 2 && !strcmp(argv[1], "preempt")) {
+      g_sched_mode = SCHED_PREEMPT;
+      printf("Active: preempt");
+   } else {
+      if (g_sched_mode == SCHED_COOP)
+         printf("Current: coop\n");
+      else
+         printf("Current: preempt\n");
+   }
+   return 0;
+}
+
+REGISTER_CMD("sched", cmd_sched);

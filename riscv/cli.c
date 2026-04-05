@@ -89,7 +89,7 @@ void run_cli(void) {
    char buf[CMD_BUF_SIZE];
    int idx = 0;
 
-   printf("Hello from RV32 bare metal clang on QEMU virt\n");
+   printf("Hello from AITMOS, an RV32 bare metal OS using clang on QEMU virt\n");
    printf("Type a command and press Enter.\n");
    prompt();
 

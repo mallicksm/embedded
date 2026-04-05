@@ -1,11 +1,13 @@
 #include "k.h"
 #include "proc.h"
+#include "trap.h"
 
 #define TIMER_INTERVAL 10000000 // adjust for your platform
 
-void timer_set(void) {
+void timer_set(uint32_t delta) {
+   (void)delta;
    uint64_t now = *MTIME;
-   *MTIMECMP = now + TIMER_INTERVAL;
+   *MTIMECMP = now + delta;
 }
 //------------------------------------------------------------------------------
 // public
@@ -34,7 +36,7 @@ void trap_enable(void) {
    // enable global interrupts
    CSR_SET(mstatus, MSTATUS_MIE);
 
-   timer_set();
+   timer_set(TIMER_INTERVAL);
 }
 
 //------------------------------------------------------------------------------
@@ -56,6 +58,7 @@ void trap_enable(void) {
 //    Returns back to interrupted context via mret (in trap_entry.S).
 //------------------------------------------------------------------------------
 extern struct task* g_current_task;
+extern volatile sched_mode_t g_sched_mode;
 void trap_handler(void) {
    uint32_t cause = CSR_READ(mcause);
 
@@ -63,11 +66,13 @@ void trap_handler(void) {
       uint32_t irq = cause & 0xff;
 
       if (irq == 7) {
-         timer_set();
+         timer_set(TIMER_INTERVAL);
          sched_tick();
 
-         if (g_current_task)
+         if ((g_sched_mode == SCHED_PREEMPT) && g_current_task) {
             task_yield();
+         }
+
          return;
       }
 
