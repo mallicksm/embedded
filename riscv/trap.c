@@ -1,6 +1,7 @@
 #include "k.h"
 #include "proc.h"
 #include "trap.h"
+#include "printf.h"
 
 #define TIMER_INTERVAL 10000000 // adjust for your platform
 
@@ -76,6 +77,13 @@ void trap_handler(void) {
 
       ASSERT_MSG(0, "trap: unexpected interrupt\n");
    }
+
+   uint32_t mtvec = CSR_READ(mtvec);
+   uint32_t mstatus = CSR_READ(mstatus);
+   uint32_t mepc = CSR_READ(mepc);
+
+   printf("mstatus=0x%x mepc=0x%x\n", mstatus, mepc);
+   printf("mcause=0x%x  mtvec=0x%x\n", cause, mtvec);
 
    ASSERT_MSG(0, "trap: unexpected exception\n");
 }

@@ -19,7 +19,7 @@ REGISTER_PROG("slow", prog_slow);
 
 void prog_sleeper(void) {
    while (1) {
-      printf("S,%d", task_getpid());
+      printf("S%d", task_getpid());
       task_sleep(50);
    }
 }

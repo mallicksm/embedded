@@ -48,7 +48,6 @@ static inline void panic(const char* file, int line) {
          panic(__FILE__, __LINE__); \
       }                             \
    } while (0)
-
 //------------------------------------------------------------------------------
 // Branch prediction hints (optional)
 //------------------------------------------------------------------------------
