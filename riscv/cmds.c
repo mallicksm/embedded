@@ -34,22 +34,6 @@ static int cmd_help(int argc, char** argv) {
 
 REGISTER_CMD("help", cmd_help);
 
-static int cmd_echo(int argc, char** argv) {
-   int i;
-
-   for (i = 1; i < argc; i++) {
-      uart_puts(argv[i]);
-      if (i + 1 < argc) {
-         uart_putc(' ');
-      }
-   }
-   uart_puts("\n");
-
-   return 0;
-}
-
-REGISTER_CMD("echo", cmd_echo);
-
 static int cmd_mrd(int argc, char** argv) {
    if (argc < 2) {
       uart_puts("Usage: mrd <addr> [count]\n");
@@ -118,18 +102,6 @@ int cmd_ps(int argc, char** argv) {
 }
 
 REGISTER_CMD("ps", cmd_ps);
-
-/* cmds.c */
-static int cmd_tick(int argc, char** argv) {
-   (void)argc;
-   (void)argv;
-   sched_tick();
-   return 0;
-}
-
-REGISTER_CMD("tick", cmd_tick);
-
-volatile sched_mode_t g_sched_mode = SCHED_COOP;
 
 static int cmd_sched(int argc, char** argv) {
    ASSERT_MSG(argc > 0, "sched: bad argc\n");

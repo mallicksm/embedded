@@ -4,6 +4,7 @@
 #include "trap.h"
 
 int main(void) {
+   g_sched_mode = SCHED_COOP;
    sched_init();
    task_spawn("cli", prog_cli);
    trap_enable();

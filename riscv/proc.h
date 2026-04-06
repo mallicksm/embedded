@@ -128,6 +128,14 @@ struct task {
 void thread_switch(struct thread_context* old,
                    struct thread_context* new);
 
+typedef enum {
+   SCHED_COOP = 0,
+   SCHED_PREE = 1,
+} sched_mode_t;
+
+extern volatile sched_mode_t g_sched_mode;
+extern struct task* g_current_task;
+
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------

@@ -57,8 +57,6 @@ void trap_enable(void) {
 // Control-flow:
 //    Returns back to interrupted context via mret (in trap_entry.S).
 //------------------------------------------------------------------------------
-extern struct task* g_current_task;
-extern volatile sched_mode_t g_sched_mode;
 void trap_handler(void) {
    uint32_t cause = CSR_READ(mcause);
 

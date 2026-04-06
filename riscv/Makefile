@@ -53,22 +53,28 @@ OBJS := $(OBJS:.S=.o)
 all: clean $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info compile_commands.json
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiling $<.."
 
 %.o: %.S
-	$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
+	@echo "Assembling $<.."
+	@$(CC) $(filter-out -g, $(CFLAGS)) -c $< -o $@
 
 $(TARGET).elf: $(OBJS) linker.ld
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+	@echo "Linking $@ using [$(LDFLAGS)]"
+	@$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 $(TARGET).bin: $(TARGET).elf
-	$(OBJCOPY) -O binary $< $@
+	@echo "objcopy $< -> $@"
+	@$(OBJCOPY) -O binary $< $@
 
 $(TARGET).lst: $(TARGET).elf
-	$(OBJDUMP) -S -d $< > $@
+	@echo "objdump $< -> $@"
+	@$(OBJDUMP) -S -d $< > $@
 
 $(TARGET).info: $(TARGET).elf
-	$(READELF) -a $(TARGET).elf > $@
+	@echo "readelf $< -> $@"
+	@$(READELF) -a $(TARGET).elf > $@
 
 run: $(TARGET).elf
 	@echo "Ctrl + c to exit"
@@ -105,7 +111,7 @@ compile_commands.json:
 	@echo "]" >> $@
 
 clean:
-	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
+	@rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
 
 gui:
 	gdbgui $(TARGET).elf --gdb-cmd riscv64-elf-gdb
