@@ -12,16 +12,21 @@
 
 static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;
+   const struct progs* prog = __progs_start;
 
    (void)argc;
    (void)argv;
 
-   uart_puts("Commands:\n");
+   printf("Commands:\n");
    while (cmd < __cmds_end) {
-      uart_puts("  ");
-      uart_puts(cmd->name);
-      uart_puts("\n");
+      printf("  (c) %s\n", cmd->name);
       cmd++;
+   }
+
+   printf("Progs:\n");
+   while (prog < __progs_end) {
+      printf("  (p) %s\n", prog->name);
+      prog++;
    }
 
    return 0;
@@ -93,10 +98,10 @@ int cmd_ps(int argc, char** argv) {
    (void)argv;
    struct task* t = g_first_task;
 
-   printf("NAME\tSTATE   \tSLEEP\n");
+   printf("PID \tNAME\tSTATE   \tSLEEP\n");
 
    do {
-      printf("%s\t", t->name);
+      printf("%d\t%s\t", t->pid, t->name);
 
       if (t->state == TASK_RUNNING)
          printf("RUNNING \t");

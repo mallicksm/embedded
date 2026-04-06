@@ -50,10 +50,10 @@ static struct task* task_list_pick(void);
 //------------------------------------------------------------------------------
 static void task_trampoline(void);
 static void task_init(struct task* task,
-               const char* name,
-               void (*entry)(void),
-               uint8_t* stack_base,
-               uint32_t stack_size) {
+                      const char* name,
+                      void (*entry)(void),
+                      uint8_t* stack_base,
+                      uint32_t stack_size) {
    uint32_t stack_top;
 
    ASSERT_MSG(task != 0, "task_init: null task\n");
@@ -62,6 +62,7 @@ static void task_init(struct task* task,
    ASSERT_MSG(stack_base != 0, "task_init: null stack\n");
 
    task->name = name;
+   task->pid = 0;
    task->entry = entry;
    task->stack_base = stack_base;
    task->stack_size = stack_size;
@@ -227,6 +228,9 @@ void task_exit(void) {
    UNREACHABLE();
 }
 
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 void task_sleep(int ticks) {
    ASSERT_MSG(g_current_task != 0, "sleep: no current task\n");
 
@@ -236,12 +240,16 @@ void task_sleep(int ticks) {
    task_yield();
 }
 
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 int task_getpid(void) {
    ASSERT_MSG(g_current_task != 0, "getpid: no current task\n");
    return g_current_task - g_task_pool;
 }
 
 //------------------------------------------------------------------------------
+// public
 //------------------------------------------------------------------------------
 static struct task* task_by_pid(int);
 int task_kill(int pid) {
@@ -328,6 +336,9 @@ void sched_start(void) {
    UNREACHABLE();
 }
 
+//------------------------------------------------------------------------------
+// public
+//------------------------------------------------------------------------------
 void sched_tick(void) {
    struct task* t;
 
@@ -395,20 +406,24 @@ static struct task* task_list_pick(void) {
 
 static void task_list_add(struct task* task) {
    struct task* p;
+   int pid = 1;
 
    ASSERT_MSG(task != 0, "add: null task\n");
 
    if (g_first_task == 0) {
       g_first_task = task;
       task->next = task;
+      task->pid = 0;
       return;
    }
 
    p = g_first_task;
    while (p->next != g_first_task) {
       p = p->next;
+      pid++;
    }
 
+   task->pid = pid;
    p->next = task;
    task->next = g_first_task;
 }

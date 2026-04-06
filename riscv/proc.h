@@ -84,6 +84,7 @@ enum task_state {
 //------------------------------------------------------------------------------
 struct task {
    const char* name;
+   int pid;
    struct thread_context ctx;
    enum task_state state;
    int sleep_ticks;
