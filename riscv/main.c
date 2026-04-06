@@ -1,3 +1,4 @@
+#include "k.h"
 #include <stdint.h>
 #include "cli.h"
 #include "proc.h"

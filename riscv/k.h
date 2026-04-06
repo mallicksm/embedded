@@ -161,6 +161,13 @@ static inline int is_hex(char c) {
 // CSR bit definitions
 //------------------------------------------------------------------------------
 
+// uart
+#define UART0_BASE 0x10000000
+
+#define UART_RBR (*(volatile uint8_t*)(UART0_BASE + 0x00))
+#define UART_THR (*(volatile uint8_t*)(UART0_BASE + 0x00))
+#define UART_LSR (*(volatile uint8_t*)(UART0_BASE + 0x05))
+
 // mstatus
 #define MSTATUS_MIE (1u << 3)
 

@@ -5,8 +5,6 @@ MEMORY
    RAM (rwx) : ORIGIN = 0x80000000, LENGTH = 128M
 }
 
-__uart0_base = 0x10000000;
-
 SECTIONS
 {
    . = ORIGIN(RAM);

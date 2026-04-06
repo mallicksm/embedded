@@ -1,3 +1,4 @@
+#include "k.h"
 #include "progs.h"
 #include "printf.h"
 #include "proc.h"
@@ -6,6 +7,7 @@ DEFINE_PROG(a, PROG_COOP);
 DEFINE_PROG(b, PROG_COOP);
 DEFINE_PROG(i, PROG_PREE);
 DEFINE_PROG(j, PROG_PREE);
+
 void prog_slow(void) {
    while (1) {
       for (volatile int i = 0; i < 100000000; i++)

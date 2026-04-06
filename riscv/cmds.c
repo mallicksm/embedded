@@ -1,6 +1,5 @@
 #include "k.h"
 #include <stdint.h>
-#include "uart.h"
 #include "cmds.h"
 #include "printf.h"
 #include "stdlib.h"

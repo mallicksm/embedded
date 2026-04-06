@@ -5,8 +5,8 @@
 //   - User tasks are registered via REGISTER_PROG() and started via CLI.
 //   - At least one task (CLI) must always remain runnable.
 //------------------------------------------------------------------------------
+#include "k.h"
 #include <stdint.h>
-#include "uart.h"
 #include "cmds.h"
 #include "progs.h"
 #include "proc.h"

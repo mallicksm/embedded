@@ -1,6 +1,6 @@
+#include "k.h"
 #include <stdarg.h>
 #include <stdint.h>
-#include "uart.h"
 #include "printf.h"
 
 static const char g_digits_lower[] = "0123456789abcdef";
