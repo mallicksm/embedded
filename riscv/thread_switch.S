@@ -2,13 +2,33 @@
 .globl thread_switch
 .type thread_switch, @function
 
-# void thread_switch(struct thread_context *old, struct thread_context *new);
-# a0 = old (may be NULL — skip save), a1 = new
-# Layout must match struct thread_context in proc.h (s0..s11, ra, sp).
+#------------------------------------------------------------------------------
+# thread_switch(old, new)
+#
+# a0 = old context (may be NULL → skip save)
+# a1 = new context (must be valid)
+#
+# What it does:
+#   - Saves callee-saved registers of the current thread into *old
+#   - Restores callee-saved registers from *new
+#   - Switches execution to the new thread
+#
+# Register policy:
+#   - Saves: s0–s11, ra, sp   (callee-saved + control state)
+#   - Does NOT touch: a*, t*  (caller-saved handled by trap)
+#
+# Control flow:
+#   - If old != NULL → save current context
+#   - Always restore new context
+#   - ret → resumes execution in new thread
+#------------------------------------------------------------------------------
 
 thread_switch:
    beqz a0, 2f
 
+   # --------------------------------------------------
+   # Save current thread context (callee-saved)
+   # --------------------------------------------------
    sw   s0,  0(a0)
    sw   s1,  4(a0)
    sw   s2,  8(a0)
@@ -26,6 +46,9 @@ thread_switch:
    sw   sp, 52(a0)
 
 2:
+   # --------------------------------------------------
+   # Restore next thread context (callee-saved)
+   # --------------------------------------------------
    lw   s0,  0(a1)
    lw   s1,  4(a1)
    lw   s2,  8(a1)
@@ -42,6 +65,9 @@ thread_switch:
    lw   ra, 48(a1)
    lw   sp, 52(a1)
 
+   # --------------------------------------------------
+   # Return into new thread
+   # --------------------------------------------------
    ret
 
 .size thread_switch, .-thread_switch
