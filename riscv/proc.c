@@ -3,7 +3,10 @@
 
 #define MAX_TASKS 64
 #define TASK_STACK_SIZE 1024
+#define KSTACK_SIZE 1024
 
+uint8_t g_kstack[KSTACK_SIZE];
+uint8_t* g_kstack_top = g_kstack + KSTACK_SIZE;
 static struct task g_task_pool[MAX_TASKS];
 static uint8_t g_task_stacks[MAX_TASKS][TASK_STACK_SIZE];
 struct task* g_current_task = 0;
@@ -179,6 +182,7 @@ void task_yield(void) {
    next->state = TASK_RUNNING;
    g_current_task = next;
 
+   CSR_WRITE(mscratch, &next->tf);
    thread_switch(&current->ctx, &next->ctx);
 
    // resumed here
@@ -225,6 +229,7 @@ void task_exit(void) {
    g_current_task = next;
    next->state = TASK_RUNNING;
 
+   CSR_WRITE(mscratch, &next->tf);
    thread_switch(&dead->ctx, &next->ctx);
 
    UNREACHABLE();
@@ -333,6 +338,7 @@ void sched_start(void) {
    task->state = TASK_RUNNING;
    g_current_task = task;
 
+   CSR_WRITE(mscratch, &task->tf);
    thread_switch(&g_sched_ctx, &task->ctx);
 
    UNREACHABLE();

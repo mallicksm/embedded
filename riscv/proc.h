@@ -2,6 +2,40 @@
 #include <stdint.h>
 
 //------------------------------------------------------------------------------
+// Invariant:
+//   mscratch ALWAYS holds &current->tf
+//
+// trap_entry:
+//   saves/restores caller-saved + mepc using this pointer
+//
+// thread_switch:
+//   switches ctx (sp + s-registers)
+//
+// These two together fully reconstruct CPU state.
+//------------------------------------------------------------------------------
+struct trapframe {
+   uint32_t ra;
+
+   uint32_t t0;
+   uint32_t t1;
+   uint32_t t2;
+   uint32_t t3;
+   uint32_t t4;
+   uint32_t t5;
+   uint32_t t6;
+
+   uint32_t a0;
+   uint32_t a1;
+   uint32_t a2;
+   uint32_t a3;
+   uint32_t a4;
+   uint32_t a5;
+   uint32_t a6;
+   uint32_t a7;
+
+   uint32_t mepc;
+};
+//------------------------------------------------------------------------------
 // Saved machine context for a suspended task.
 //
 // Used by:
@@ -85,7 +119,8 @@ enum task_state {
 struct task {
    const char* name;
    int pid;
-   struct thread_context ctx;
+   struct thread_context ctx; // calee saved reg (thread switch)
+   struct trapframe tf;       // caller saved reg (trap entry)
    enum task_state state;
    int sleep_ticks;
    void (*entry)(void);
