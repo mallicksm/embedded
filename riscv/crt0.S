@@ -12,7 +12,7 @@ _start:
    sw zero, 0(t0)
    addi t0, t0, 4
    j 1b
-
+   csrw  mscratch, x0      # mscratch = 0
 2:
    call main
 
