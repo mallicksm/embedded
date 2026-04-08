@@ -8,7 +8,7 @@ trap_entry:
    # swap: a7 = tf, mscratch = original a7
    # ----------------------------------------
    csrrw a7, mscratch, a7
-   beqz a7, 1f # if mscratch == 0 → branch to mret
+   beqz a7, 2f # if mscratch == 0 → branch to mret
 
    # ----------------------------------------
    # Save registers (except a7)
@@ -95,5 +95,7 @@ trap_entry:
 
    1:
    mret
-
+   2:
+   csrrw a7, mscratch, a7
+   mret
 .size trap_entry, .-trap_entry

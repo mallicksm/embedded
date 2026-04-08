@@ -17,13 +17,17 @@ import importlib
 if "gdb" not in sys.path:
    sys.path.append("gdb")
 
+import gdb_common
 import gdb_printers
-import gdb_csr
 import gdb_ctx
+import gdb_tasks
+import gdb_csr
 #
+gdb_common   = importlib.reload(gdb_common)
 gdb_printers = importlib.reload(gdb_printers)
-gdb_csr      = importlib.reload(gdb_csr)
 gdb_ctx      = importlib.reload(gdb_ctx)
+gdb_tasks    = importlib.reload(gdb_tasks)
+gdb_csr      = importlib.reload(gdb_csr)
 end
 
 define connect

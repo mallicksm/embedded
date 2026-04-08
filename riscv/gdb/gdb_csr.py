@@ -1,12 +1,10 @@
 import gdb
+from gdb_common import hx
 
-# ----------------------------------------
-# Helpers
-# ----------------------------------------
+# ---- helpers ----
 
 def csr(name):
    try:
-      # force unsigned 32-bit
       return int(gdb.parse_and_eval(f"${name}")) & 0xffffffff
    except:
       return None
@@ -43,14 +41,11 @@ def pr(name, val, show_sym=False, decode=None):
    if decode:
       print(" " * 12 + decode(val))
 
+# ---- command ----
 
-# ----------------------------------------
-# Command
-# ----------------------------------------
-
-class DumpCSR(gdb.Command):
+class gdb_csr(gdb.Command):
    def __init__(self):
-      super().__init__("dumpcsr", gdb.COMMAND_USER)
+      super().__init__("gdb_csr", gdb.COMMAND_USER)
 
    def invoke(self, arg, from_tty):
       print("\n=== CSR: trap ===")
@@ -73,9 +68,6 @@ class DumpCSR(gdb.Command):
 
       print("\n=================\n")
 
+# ---- register ----
 
-# ----------------------------------------
-# Register command
-# ----------------------------------------
-
-DumpCSR()
+gdb_csr()

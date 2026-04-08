@@ -31,13 +31,14 @@ void trap_enable(void) {
    // install trap vector
    CSR_WRITE(mtvec, trap_entry);
 
+   // program timer FIRST
+   timer_set(TIMER_INTERVAL);
+
    // enable timer interrupt
    CSR_SET(mie, MIE_MTIE);
 
-   // enable global interrupts
+   // enable global interrupts LAST
    CSR_SET(mstatus, MSTATUS_MIE);
-
-   timer_set(TIMER_INTERVAL);
 }
 
 //------------------------------------------------------------------------------

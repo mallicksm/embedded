@@ -1,18 +1,7 @@
 import gdb
+from gdb_common import val, hx
 
 # ---- helpers ----
-
-def val(expr):
-   try:
-      return gdb.parse_and_eval(expr)
-   except:
-      return None
-
-def hx(v):
-   try:
-      return int(v)
-   except:
-      return 0
 
 def pr(name, v):
    if v is None:
@@ -20,11 +9,11 @@ def pr(name, v):
    else:
       print(f"{name:6}: 0x{hx(v):08x}")
 
-# ---- dump current context ----
+# ---- command ----
 
-class DumpCtx(gdb.Command):
+class gdb_ctx(gdb.Command):
    def __init__(self):
-      super().__init__("dumpctx", gdb.COMMAND_USER)
+      super().__init__("gdb_ctx", gdb.COMMAND_USER)
 
    def invoke(self, arg, from_tty):
       print("\n=== CTX ===")
@@ -48,47 +37,6 @@ class DumpCtx(gdb.Command):
 
       print("===========\n")
 
-# ---- dump all tasks ----
-class DumpTasks(gdb.Command):
-   def __init__(self):
-      super().__init__("dumptasks", gdb.COMMAND_USER)
+# ---- register ----
 
-   def invoke(self, arg, from_tty):
-      print("\n=== TASK LIST ===")
-
-      t = val("g_first_task")
-      if t is None or int(t) == 0:
-         print("no tasks")
-         return
-
-      start = t
-      i = 0
-
-      while True:
-         try:
-            name = t["name"].string()
-         except:
-            name = "<noname>"
-
-         try:
-            state = int(t["state"])
-         except:
-            state = -1
-
-         try:
-            sleep = int(t["sleep_ticks"])
-         except:
-            sleep = -1
-
-         print(f"[{i}] {name} state={state} sleep={sleep}")
-
-         t = t["next"]
-         i += 1
-
-         if int(t) == 0 or t == start:
-            break
-
-      print("=================\n")
-
-DumpCtx()
-DumpTasks()
+gdb_ctx()
