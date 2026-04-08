@@ -1,5 +1,6 @@
 import gdb
-from gdb_common import hx
+import os
+from gdb_common import load_yaml, print_reg_yaml
 
 # ---- helpers ----
 
@@ -14,60 +15,74 @@ def sym(addr):
       return "<na>"
 
    try:
-      out = gdb.execute(f"info symbol 0x{addr:x}", to_string=True).strip()
+      out = gdb.execute("info symbol 0x%x" % addr, to_string=True).strip()
+
+      if "No symbol matches" in out:
+         return "<nosym>"
+
       return out.split("\n")[0]
+
    except:
       return "<unknown>"
 
-def decode_mcause(val):
-   if val is None:
-      return ""
-
-   irq  = (val >> 31) & 1
-   code = val & 0xff
-
-   return f"(irq={irq} code={code})"
-
 def pr(name, val, show_sym=False, decode=None):
    if val is None:
-      print(f"{name:10} : <na>")
+      print("%-10s : <na>" % name)
       return
 
    if show_sym:
-      print(f"{name:10} : 0x{val:08x}  ({sym(val)})")
+      print("%-10s : 0x%08x  (%s)" % (name, val, sym(val)))
    else:
-      print(f"{name:10} : 0x{val:08x}")
+      print("%-10s : 0x%08x" % (name, val))
 
    if decode:
       print(" " * 12 + decode(val))
 
-# ---- command ----
 
+# ---- yaml db ----
+_db = load_yaml(os.path.join(os.path.dirname(__file__), "csr.yaml"))
+
+# ---- command ----
 class gdb_csr(gdb.Command):
    def __init__(self):
       super().__init__("gdb_csr", gdb.COMMAND_USER)
 
+   def dump_regs(self, regs_sym, regs_yaml):
+      regs = regs_sym + regs_yaml
+
+      for r in regs:
+         v = csr(r)
+
+         if r in regs_yaml and r in _db:
+            print_reg_yaml(_db, r, v)
+         else:
+            pr(r, v, show_sym=(r in regs_sym))
+
    def invoke(self, arg, from_tty):
       print("\n=== CSR: trap ===")
-
-      pr("mepc",   csr("mepc"),   show_sym=True)
-      pr("mcause", csr("mcause"), decode=decode_mcause)
-      pr("mtval",  csr("mtval"))
-      pr("mtvec",  csr("mtvec"),  show_sym=True)
-
+      self.dump_regs(
+         regs_sym  = ["mepc", "mtvec"],
+         regs_yaml = ["mcause", "mtval"]
+      )
+      
       print("\n=== CSR: state ===")
-      pr("mstatus", csr("mstatus"))
-      pr("misa",    csr("misa"))
-
+      self.dump_regs(
+         regs_sym  = [],
+         regs_yaml = ["mstatus", "misa"]
+      )
+      
       print("\n=== CSR: interrupt ===")
-      pr("mie", csr("mie"))
-      pr("mip", csr("mip"))
-
+      self.dump_regs(
+         regs_sym  = [],
+         regs_yaml = ["mie", "mip"]
+      )
+      
       print("\n=== CSR: misc ===")
-      pr("mscratch", csr("mscratch"))
-
+      self.dump_regs(
+         regs_sym  = ["mscratch"],
+         regs_yaml = []
+      )
       print("\n=================\n")
 
 # ---- register ----
-
 gdb_csr()

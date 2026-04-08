@@ -16,7 +16,9 @@ import sys
 import importlib
 if "gdb" not in sys.path:
    sys.path.append("gdb")
-
+p = "/Users/mallicksm/venv/lib/python3.13/site-packages"
+if p not in sys.path:
+   sys.path.append("/Users/mallicksm/venv/lib/python3.13/site-packages")
 import gdb_common
 import gdb_printers
 import gdb_ctx
