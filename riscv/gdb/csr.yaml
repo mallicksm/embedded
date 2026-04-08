@@ -7,6 +7,13 @@ mstatus:
     - { name: FS,    bits: "14:13",  desc: fp status }
     - { name: XS,    bits: "16:15",  desc: ext status }
 
+misa:
+  desc: machine isa
+  fields:
+    - { name: MXL, bits: "31:30", desc: xlen (1=32;2=64;3=128) }
+    - { name: A, bits: "0",  desc: atomic }
+    - { name: S, bits: "18", desc: supervisor }
+    - { name: U, bits: "20", desc: user mode }
 
 mcause:
   desc: machine cause

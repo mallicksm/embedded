@@ -48,21 +48,24 @@ class gdb_csr(gdb.Command):
       super().__init__("gdb_csr", gdb.COMMAND_USER)
 
    def dump_regs(self, regs_sym, regs_yaml):
-      regs = regs_sym + regs_yaml
-
-      for r in regs:
+      for r in regs_yaml:
          v = csr(r)
-
          if r in regs_yaml and r in _db:
             print_reg_yaml(_db, r, v)
          else:
+            pr(r,v)
+      for r in regs_sym:
+         v = csr(r)
+         if r in regs_sym:
             pr(r, v, show_sym=(r in regs_sym))
+         else:
+            pr(r,v)
 
    def invoke(self, arg, from_tty):
       print("\n=== CSR: trap ===")
       self.dump_regs(
          regs_sym  = ["mepc", "mtvec"],
-         regs_yaml = ["mcause", "mtval"]
+         regs_yaml = ["mcause", "mtval", "mtvec"]
       )
       
       print("\n=== CSR: state ===")
