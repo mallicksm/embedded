@@ -13,35 +13,6 @@ source venv/bin/activate
 ```bash
 python -m pip install pyyaml
 ```
-### 3. Verify installation
-
-```bash
-python -c "import yaml; print(yaml.__file__)"
-```
-Example output:
-```text
-/Users/mallicksm/venv/lib/python3.11/site-packages/yaml/__init__.py
-```
-## 🔧 GDB setup
-
-Edit `debug.gdb` and add:
-
-```gdb
-python
-import sys
-sys.path.insert(0, "/Users/mallicksm/venv/lib/python3.11/site-packages")
-end
-```
-## 🧪 Verify inside GDB
-
-```gdb
-python import yaml; print("yaml OK")
-```
-### Check GDB Python path
-
-```gdb
-python import sys; print(sys.executable)
-```
 ### Check search paths
 
 ```gdb
