@@ -91,9 +91,10 @@ puart:
 	@echo "Ctrl + ] to exit"
 	@socat -,raw,echo=0,escape=0x1d tcp:localhost:4444
 
+VENV := $(HOME)/venv
 dbg:
-	$(GDB) \
-      -tui $(TARGET).elf -x debug.gdb
+	@PY_YAML_PATH=$$($(VENV)/bin/python -c "import yaml, os; print(os.path.dirname(os.path.dirname(yaml.__file__)))") \
+   $(GDB) firmware.elf -x debug.gdb
 
 #-------------------------------------------------------------------------------
 # Helper
@@ -109,14 +110,9 @@ compile_commands.json:
    done
 	@sed -e '$$s/},/}/' $@ > $@.tmp && mv $@.tmp $@
 	@echo "]" >> $@
-
+pychk:
+	python -c "import yaml; print(yaml.__file__)"
 clean:
 	@rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).lst $(TARGET).info $(TARGET).map
-
-gui:
-	gdbgui $(TARGET).elf --gdb-cmd riscv64-elf-gdb
-
-ddd:
-	ddd --debugger riscv64-elf-gdb $(TARGET).elf
 
 .PHONY: all run dbg puart compile_commands.json clean puart dbg

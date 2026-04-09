@@ -12,13 +12,15 @@ set $pc = 0x80000000
 set confirm on
 
 python
-import sys
+import os, sys
 import importlib
 if "gdb" not in sys.path:
    sys.path.append("gdb")
-p = "/Users/mallicksm/venv/lib/python3.13/site-packages"
+#p = "/Users/mallicksm/venv/lib/python3.13/site-packages"
+p = os.environ.get("PY_YAML_PATH")
 if p not in sys.path:
-   sys.path.append("/Users/mallicksm/venv/lib/python3.13/site-packages")
+    sys.path.insert(0,p)
+#   sys.path.append("/Users/mallicksm/venv/lib/python3.13/site-packages")
 import gdb_common
 import gdb_printers
 import gdb_ctx
