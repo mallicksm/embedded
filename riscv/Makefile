@@ -94,7 +94,7 @@ puart:
 VENV := $(HOME)/venv
 dbg:
 	@PY_YAML_PATH=$$($(VENV)/bin/python -c "import yaml, os; print(os.path.dirname(os.path.dirname(yaml.__file__)))") \
-   $(GDB) firmware.elf -x debug.gdb
+   $(GDB) firmware.elf -x gdb/debug.gdb
 
 #-------------------------------------------------------------------------------
 # Helper

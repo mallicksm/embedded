@@ -1,8 +1,8 @@
 mstatus:
   desc: machine status
   fields:
-    - { name: MIE,   bits: "3",      desc: global irq enable }
-    - { name: MPIE,  bits: "7",      desc: prev irq enable }
+    - { name: MIE,   bits: "3",      desc: enable; global irq }
+    - { name: MPIE,  bits: "7",      desc: enable; prev irq }
     - { name: MPP,   bits: "12:11",  desc: prev privilege }
     - { name: FS,    bits: "14:13",  desc: fp status }
     - { name: XS,    bits: "16:15",  desc: ext status }
@@ -19,7 +19,7 @@ mcause:
   desc: machine cause
   fields:
     - { name: IRQ,   bits: "31",     desc: interrupt flag }
-    - { name: CODE,  bits: "7:0",    desc: cause code }
+    - { name: CODE,  bits: "7:0",    desc: code 0=IM; 1=IF; 2=ill; 4=DM; 5=DF }
 
 
 mtvec:
@@ -31,17 +31,17 @@ mtvec:
 mie:
   desc: interrupt enable
   fields:
-    - { name: MSIE,  bits: "3",      desc: software irq enable }
-    - { name: MTIE,  bits: "7",      desc: timer irq enable }
-    - { name: MEIE,  bits: "11",     desc: external irq enable }
+    - { name: MSIE,  bits: "3",      desc: enable; software irq }
+    - { name: MTIE,  bits: "7",      desc: enable; timer irq }
+    - { name: MEIE,  bits: "11",     desc: enable; external irq }
 
 
 mip:
   desc: interrupt pending
   fields:
-    - { name: MSIP,  bits: "3",      desc: software pending }
-    - { name: MTIP,  bits: "7",      desc: timer pending }
-    - { name: MEIP,  bits: "11",     desc: external pending }
+    - { name: MSIP,  bits: "3",      desc: pending; software }
+    - { name: MTIP,  bits: "7",      desc: pending; timer }
+    - { name: MEIP,  bits: "11",     desc: pending; external }
 
 
 # ---- supervisor (optional but useful) ----
@@ -49,8 +49,8 @@ mip:
 sstatus:
   desc: supervisor status
   fields:
-    - { name: SIE,   bits: "1",      desc: global irq enable }
-    - { name: SPIE,  bits: "5",      desc: prev irq enable }
+    - { name: SIE,   bits: "1",      desc: enable; global irq }
+    - { name: SPIE,  bits: "5",      desc: enable; prev irq }
     - { name: SPP,   bits: "8",      desc: prev privilege }
 
 
@@ -58,32 +58,26 @@ scause:
   desc: supervisor cause
   fields:
     - { name: IRQ,   bits: "31",     desc: interrupt flag }
-    - { name: CODE,  bits: "7:0",    desc: cause code }
-
-
-stval:
-  desc: trap value
-  fields: []
+    - { name: CODE,  bits: "7:0",    desc: code 0=IM; 1=IF; 2=ill; 4=DM; 5=DF }
 
 
 stvec:
   desc: trap vector
   fields:
-    - { name: BASE,  bits: "31:2",   desc: base address }
     - { name: MODE,  bits: "1:0",    desc: vector mode }
 
 
 sie:
   desc: supervisor interrupt enable
   fields:
-    - { name: SSIE,  bits: "1",      desc: software irq enable }
-    - { name: STIE,  bits: "5",      desc: timer irq enable }
-    - { name: SEIE,  bits: "9",      desc: external irq enable }
+    - { name: SSIE,  bits: "1",      desc: enable; software irq }
+    - { name: STIE,  bits: "5",      desc: enable; timer irq }
+    - { name: SEIE,  bits: "9",      desc: enable; external irq }
 
 
 sip:
   desc: supervisor interrupt pending
   fields:
-    - { name: SSIP,  bits: "1",      desc: software pending }
-    - { name: STIP,  bits: "5",      desc: timer pending }
-    - { name: SEIP,  bits: "9",      desc: external pending }
+    - { name: SSIP,  bits: "1",      desc: pending; software }
+    - { name: STIP,  bits: "5",      desc: pending; timer }
+    - { name: SEIP,  bits: "9",      desc: pending; external }
