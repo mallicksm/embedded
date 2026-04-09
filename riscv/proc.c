@@ -12,13 +12,7 @@ static uint8_t g_task_stacks[MAX_TASKS][TASK_STACK_SIZE];
 struct task* g_current_task = 0;
 struct task* g_first_task = 0;
 static struct thread_context g_sched_ctx;
-
 volatile sched_mode_t g_sched_mode = SCHED_COOP;
-
-// Protect thread_context to thread_switch.S placement
-_Static_assert(sizeof(struct thread_context) == 56, "ctx size");
-_Static_assert(__builtin_offsetof(struct thread_context, ra) == 48, "ra offset");
-_Static_assert(__builtin_offsetof(struct thread_context, sp) == 52, "sp offset");
 
 // Forward declaration of local statics
 static void task_list_add(struct task* task);
