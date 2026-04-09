@@ -165,9 +165,9 @@ void task_yield(void) {
    struct task* next;
 
    current = g_current_task;
-   ASSERT_MSG(current != 0, "yield: no current task\n");
-
    next = task_list_pick();
+
+   ASSERT_MSG(current != 0, "yield: no current task\n");
    ASSERT_MSG(next != 0, "yield: no runnable task\n");
 
    if (next == current) {
@@ -182,12 +182,11 @@ void task_yield(void) {
    next->state = TASK_RUNNING;
    g_current_task = next;
 
-   CSR_WRITE(mscratch, &next->tf);
    thread_switch(&current->ctx, &next->ctx);
-
    // resumed here
    g_current_task = current;
    current->state = TASK_RUNNING;
+   CSR_WRITE(mscratch, &g_current_task->tf);
 }
 
 //------------------------------------------------------------------------------
