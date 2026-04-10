@@ -153,7 +153,6 @@ static inline int is_hex(char c) {
 //------------------------------------------------------------------------------
 // CSR bit definitions
 //------------------------------------------------------------------------------
-
 // uart
 #define UART0_BASE 0x10000000
 
@@ -172,3 +171,23 @@ static inline int is_hex(char c) {
 
 #define MTIME ((volatile uint64_t*)0x0200BFF8)
 #define MTIMECMP ((volatile uint64_t*)0x02004000)
+
+//------------------------------------------------------------------------------
+// interrupt control (xv6-style)
+//------------------------------------------------------------------------------
+// Return 1 if interrupts enabled, 0 otherwise
+static inline int intr_get(void) {
+   return (CSR_READ(mstatus) & MSTATUS_MIE) != 0;
+}
+
+// Enable interrupts
+static inline void intr_on(void) {
+   CSR_SET(mstatus, MSTATUS_MIE);
+}
+
+// Disable interrupts
+static inline void intr_off(void) {
+   CSR_CLEAR(mstatus, MSTATUS_MIE);
+}
+#define ASSERT_INTR_OFF() ASSERT_MSG(!intr_get(), "interrupts must be off\n")
+#define ASSERT_INTR_ON()  ASSERT_MSG(intr_get(),  "interrupts must be on\n")

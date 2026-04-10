@@ -119,6 +119,11 @@ static int cmd_sched(int argc, char** argv) {
       }
 
       if (!strcmp(argv[1], "pree")) {
+         if (!intr_get()) {
+            printf("ERROR: interrupts are OFF (run intr_on first)\n");
+            return -1;
+         }
+
          g_sched_mode = SCHED_PREE;
          printf("Active: pree\n");
          return 0;
@@ -152,3 +157,29 @@ static int cmd_kill(int argc, char** argv) {
    return 0;
 }
 REGISTER_CMD("kill", cmd_kill);
+
+int cmd_intr(int argc, char** argv) {
+   if (argc == 1) {
+      // status
+      printf("interrupts: %s\n", intr_get() ? "ON" : "OFF");
+      return 0;
+   }
+
+   if (argc == 2) {
+      if (strcmp(argv[1], "on") == 0) {
+         intr_on();
+         printf("interrupts ON\n");
+         return 0;
+      }
+
+      if (strcmp(argv[1], "off") == 0) {
+         intr_off();
+         printf("interrupts OFF\n");
+         return 0;
+      }
+   }
+
+   printf("usage: intr [on|off]\n");
+   return -1;
+}
+REGISTER_CMD("intr", cmd_intr);
