@@ -1,20 +1,27 @@
 #ifndef K_H
 #define K_H
-
 #include <stdint.h>
 #include <stddef.h>
 
-void printf(const char* fmt, ...);
+//------------------------------------------------------------------------------
+// Kernel core utility functions
+//------------------------------------------------------------------------------
+// prog.c
 void prog_cli(void);
+// stdlib.c, string.c
 int strcmp(const char* s1, const char* s2);
 int atoi(const char*);
 unsigned long strtoul(const char* nptr, char** endptr, int base);
+// trap.c
 void timer_set(uint32_t);
 void trap_enable(void);
 void trap_handler(void);
+// printf.c
+void printf(const char* fmt, ...);
+// uart.c
 void uart_putc(char);
-char uart_getc(void);
 void uart_puts(const char*);
+char uart_getc(void);
 int uart_getc_nonblock(void);
 
 //------------------------------------------------------------------------------
@@ -29,11 +36,11 @@ int uart_getc_nonblock(void);
 //      PANIC();                 // fatal error
 //      SPIN();                  // intentional idle
 //
-//------------------------------------------------------------------------------
 // NOTE:
 //   - panic() is the ONLY place that should print failure info
 //   - ASSERT/PANIC macros should not duplicate printing
 //   - file/line reserved for future (debug bring-up)
+//------------------------------------------------------------------------------
 static inline void panic(const char* file, int line) {
    uart_puts("panic\n");
 
