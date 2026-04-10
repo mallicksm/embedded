@@ -1,7 +1,6 @@
 #include "k.h"
 #include <stdarg.h>
 #include <stdint.h>
-#include "printf.h"
 
 static const char g_digits_lower[] = "0123456789abcdef";
 static const char g_digits_upper[] = "0123456789ABCDEF";

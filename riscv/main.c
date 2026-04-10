@@ -1,8 +1,6 @@
 #include "k.h"
 #include <stdint.h>
-#include "cli.h"
 #include "proc.h"
-#include "trap.h"
 
 int main(void) {
    g_sched_mode = SCHED_COOP;

@@ -1,5 +1,4 @@
 #include "k.h"
-#include "stdlib.h"
 
 // (+, -) sign not implemented
 int atoi(const char* s) {

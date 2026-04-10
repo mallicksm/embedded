@@ -1,6 +1,5 @@
 #include "k.h"
 #include "progs.h"
-#include "printf.h"
 #include "proc.h"
 
 DEFINE_PROG(a, PROG_COOP);

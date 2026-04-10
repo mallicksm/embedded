@@ -1,13 +1,8 @@
 #include "k.h"
 #include <stdint.h>
 #include "cmds.h"
-#include "printf.h"
-#include "stdlib.h"
 #include "progs.h"
-#include "string.h"
 #include "proc.h"
-#include "trap.h"
-#include "stdlib.h"
 
 static int cmd_help(int argc, char** argv) {
    const struct cmds* cmd = __cmds_start;

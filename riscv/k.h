@@ -1,19 +1,34 @@
 #ifndef K_H
 #define K_H
 
-//------------------------------------------------------------------------------
-// Kernel core utilities (minimal, assert-driven, no silent failures)
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-// Basic types
-//------------------------------------------------------------------------------
 #include <stdint.h>
 #include <stddef.h>
-#include "uart.h"
+
+void printf(const char* fmt, ...);
+void prog_cli(void);
+int strcmp(const char* s1, const char* s2);
+int atoi(const char*);
+unsigned long strtoul(const char* nptr, char** endptr, int base);
+void timer_set(uint32_t);
+void trap_enable(void);
+void trap_handler(void);
+void uart_putc(char);
+char uart_getc(void);
+void uart_puts(const char*);
+int uart_getc_nonblock(void);
 
 //------------------------------------------------------------------------------
-// Panic / assert
+// Kernel core utilities (minimal, assert-driven, no silent failures)
+//   - No defensive checks for invariants
+//   - ASSERT() for "must be true"
+//   - PANIC() for fatal paths
+//   - SPIN() for intentional infinite loop
+//
+//   Examples:
+//      ASSERT(t != 0);          // invariant
+//      PANIC();                 // fatal error
+//      SPIN();                  // intentional idle
+//
 //------------------------------------------------------------------------------
 // NOTE:
 //   - panic() is the ONLY place that should print failure info
@@ -48,16 +63,10 @@ static inline void panic(const char* file, int line) {
          panic(__FILE__, __LINE__); \
       }                             \
    } while (0)
-//------------------------------------------------------------------------------
-// Branch prediction hints (optional)
-//------------------------------------------------------------------------------
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
 
 //------------------------------------------------------------------------------
 // Utility macros
 //------------------------------------------------------------------------------
-
 // Get container struct from member pointer
 #define container_of(ptr, type, member) \
    ((type*)((char*)(ptr) - offsetof(type, member)))
@@ -65,13 +74,11 @@ static inline void panic(const char* file, int line) {
 // NOTE: 'a' MUST be power-of-2
 #define ALIGN_UP(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 #define ALIGN_DOWN(x, a) ((x) & ~((a) - 1))
-
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 //------------------------------------------------------------------------------
 // Debug / development helpers
 //------------------------------------------------------------------------------
-
 // Unreachable code path (use instead of silent fallthrough)
 #define UNREACHABLE() \
    do {               \
@@ -103,28 +110,8 @@ static inline int is_hex(char c) {
 }
 
 //------------------------------------------------------------------------------
-// Kernel conventions (VERY IMPORTANT — your style)
-//------------------------------------------------------------------------------
-//
-//   - No defensive checks for invariants
-//   - ASSERT() for "must be true"
-//   - PANIC() for fatal paths
-//   - SPIN() for intentional infinite loop
-//
-//   Examples:
-//      ASSERT(t != 0);          // invariant
-//      PANIC();                 // fatal error
-//      SPIN();                  // intentional idle
-//
-//   Avoid:
-//      if (t == 0) return 0;    // ❌ hides bugs
-//      while (t != 0)           // ❌ defensive style
-//
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 // RISC-V CSR access (generic)
 //------------------------------------------------------------------------------
-
 // Read CSR
 #define CSR_READ(csr)               \
    ({                               \

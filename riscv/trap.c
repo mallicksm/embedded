@@ -1,7 +1,5 @@
 #include "k.h"
 #include "proc.h"
-#include "trap.h"
-#include "printf.h"
 
 #define TIMER_INTERVAL 10000000 // adjust for your platform
 

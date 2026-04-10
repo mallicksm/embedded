@@ -10,8 +10,6 @@
 #include "cmds.h"
 #include "progs.h"
 #include "proc.h"
-#include "printf.h"
-#include "string.h"
 
 static void prompt(void) {
    printf("> ");
