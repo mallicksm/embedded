@@ -45,31 +45,30 @@ static int cli_tokenize(char* buf, char** argv, int max_args) {
    return argc;
 }
 
-static const struct cmds* cmd_find(const char* name) {
-   const struct cmds* cmd = __cmds_start;
-
-   while (cmd < __cmds_end) {
-      if (strcmp(cmd->name, name) == 0) {
-         return cmd;
-      }
-      cmd++;
-   }
-   return 0;
-}
-static const struct progs* prog_find(const char* name) {
-   const struct progs* prog;
-
-   prog = __progs_start;
-   while (prog < __progs_end) {
-      if (strcmp(prog->name, name) == 0) {
-         return prog;
-      }
-      prog++;
-   }
-   return 0;
-}
-
+//------------------------------------------------------------------------------
+// private
+//------------------------------------------------------------------------------
+// Execute one CLI input line.
+//
+// Called by:
+//    cli task after a full input line has been collected.
+//
+// What it does:
+//    Tokenizes the input buffer into argc/argv form, then resolves argv[0]
+//    first as a synchronous command and next as a spawnable program. Commands
+//    run immediately in CLI context. Programs (prog) are launched as tasks via
+//    task_spawn(). If no match is found, an "Unknown command" message is
+//    printed.
+//
+// Control-flow story:
+//    Empty line -> return.
+//    cmd match  -> call cmd->fn(argc, argv) and return.
+//    prog match -> task_spawn(prog->name, prog->fn) and return.
+//    no match   -> print error and return.
+//------------------------------------------------------------------------------
 #define MAX_ARGS 16
+static const struct cmds* cmd_find(const char*);
+static const struct progs* prog_find(const char*);
 static void cli_exec(char* buf) {
    char* argv[MAX_ARGS];
    int argc;
@@ -92,6 +91,29 @@ static void cli_exec(char* buf) {
    }
 
    printf("Unknown command: %s\n", argv[0]);
+}
+static const struct cmds* cmd_find(const char* name) {
+   const struct cmds* cmd = __cmds_start;
+
+   while (cmd < __cmds_end) {
+      if (strcmp(cmd->name, name) == 0) {
+         return cmd;
+      }
+      cmd++;
+   }
+   return 0;
+}
+static const struct progs* prog_find(const char* name) {
+   const struct progs* prog;
+
+   prog = __progs_start;
+   while (prog < __progs_end) {
+      if (strcmp(prog->name, name) == 0) {
+         return prog;
+      }
+      prog++;
+   }
+   return 0;
 }
 
 //------------------------------------------------------------------------------
