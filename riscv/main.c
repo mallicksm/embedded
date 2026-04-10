@@ -3,13 +3,23 @@
 #include "proc.h"
 
 int main(void) {
-   g_sched_mode = SCHED_COOP;
-   sched_init();
-   task_spawn("cli", prog_cli);
-   trap_enable();
-   sched_start();
+   ASSERT_INTR_OFF();
 
-   for (;;)
-      ;
+   g_sched_mode = SCHED_COOP;
+
+   sched_init();
+
+   trap_init();
+
+   ASSERT_INTR_OFF();
+
+   task_spawn("cli", prog_cli);
+
+   ASSERT_MSG(g_first_task != 0, "main: no runnable tasks\n");
+
+   sched_start(); // does not return
+
+   UNREACHABLE();
+
    return 0;
 }

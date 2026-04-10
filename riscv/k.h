@@ -14,7 +14,7 @@ int atoi(const char*);
 unsigned long strtoul(const char* nptr, char** endptr, int base);
 // trap.c
 void timer_set(uint32_t);
-void trap_enable(void);
+void trap_init(void);
 void trap_handler(void);
 // printf.c
 void printf(const char* fmt, ...);

@@ -170,6 +170,7 @@ typedef enum {
 
 extern volatile sched_mode_t g_sched_mode;
 extern struct task* g_current_task;
+extern struct task* g_first_task;
 
 // Protect thread_context to thread_switch.S placement
 _Static_assert(sizeof(struct thread_context) == 56, "ctx size");

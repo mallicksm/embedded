@@ -8,35 +8,32 @@ void timer_set(uint32_t delta) {
    uint64_t now = *MTIME;
    *MTIMECMP = now + delta;
 }
+
 //------------------------------------------------------------------------------
 // public
 //------------------------------------------------------------------------------
-// Enable traps and timer interrupt.
+// Initialize trap system WITHOUT enabling interrupts.
 //
-// Called once during boot before sched_start().
+// Called during boot.
 //
 // What it does:
-//    - Sets trap vector (mtvec)
-//    - Enables machine timer interrupt (mie.MTIE)
-//    - Enables global interrupts (mstatus.MIE)
+//    - installs trap vector
+//    - enables timer interrupt source (mie)
+//    - programs timer
 //
-// System invariant:
-//    trap_handler() must be installed before enabling interrupts.
+// Invariant:
+//    global interrupts remain OFF after this call
 //------------------------------------------------------------------------------
 extern void trap_entry(void);
-
-void trap_enable(void) {
-   // install trap vector
+void trap_init(void) {
    CSR_WRITE(mtvec, trap_entry);
 
-   // program timer FIRST
-   timer_set(TIMER_INTERVAL);
-
-   // enable timer interrupt
+   // enable timer interrupt source (but still globally masked)
    CSR_SET(mie, MIE_MTIE);
 
-   // enable global interrupts LAST
-   CSR_SET(mstatus, MSTATUS_MIE);
+   timer_set(TIMER_INTERVAL);
+
+   ASSERT_INTR_OFF();
 }
 
 //------------------------------------------------------------------------------
