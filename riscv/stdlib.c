@@ -11,7 +11,7 @@ int atoi(const char* s) {
       unsigned c = (unsigned)(*s - '0');
 
       if (c > 9) {
-         return -1;   // invalid
+         return -1; // invalid
       }
 
       x = x * 10 + (int)c;
