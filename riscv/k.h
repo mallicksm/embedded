@@ -129,10 +129,10 @@ static inline int is_hex(char c) {
 #define OFF(type, reg) ((int)offsetof(type, reg))
 
 #define SAVE_A0(reg, type) \
-   asm volatile ("sw " #reg ", %0(a0)" :: "i"(OFF(type, reg)) : "memory")
+   asm volatile("sw " #reg ", %0(a0)" ::"i"(OFF(type, reg)) : "memory")
 
 #define RESTORE_A0(reg, type) \
-   asm volatile ("lw " #reg ", %0(a0)" :: "i"(OFF(type, reg)) : "memory")
+   asm volatile("lw " #reg ", %0(a0)" ::"i"(OFF(type, reg)) : "memory")
 
 // Read CSR
 #define CSR_READ(csr)               \

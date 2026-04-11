@@ -7,8 +7,7 @@
 struct trapframe g_tf;
 extern void trap_handler(void);
 
-void trap_entry(void) __attribute__((naked));
-void trap_entry(void) {
+__attribute__((naked)) void trap_entry(void) {
    // swap a0 <-> mscratch (get trapframe pointer)
    ASM("csrrw a0, mscratch, a0");
 
