@@ -35,7 +35,7 @@ LDFLAGS := \
 
 SRCS := crt0.S \
          thread_switch.S \
-         trap_entry.S \
+         trap_entry.c \
          main.c \
          uart.c \
          cmds.c \

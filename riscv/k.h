@@ -1,5 +1,4 @@
-#ifndef K_H
-#define K_H
+#pragma once
 #include <stdint.h>
 #include <stddef.h>
 
@@ -119,20 +118,41 @@ static inline int is_hex(char c) {
 //------------------------------------------------------------------------------
 // RISC-V CSR access (generic)
 //------------------------------------------------------------------------------
+// String helpers
+#define STR(x) #x
+#define XSTR(x) STR(x)
+
+// Raw asm helper
+#define ASM(instr) \
+   asm volatile(instr ::: "memory")
+
+#define OFF(type, reg) ((int)offsetof(type, reg))
+
+#define SAVE_A0(reg, type) \
+   asm volatile ("sw " #reg ", %0(a0)" :: "i"(OFF(type, reg)) : "memory")
+
+#define RESTORE_A0(reg, type) \
+   asm volatile ("lw " #reg ", %0(a0)" :: "i"(OFF(type, reg)) : "memory")
+
 // Read CSR
 #define CSR_READ(csr)               \
    ({                               \
       uint32_t __tmp;               \
       asm volatile("csrr %0, " #csr \
-                   : "=r"(__tmp));  \
+                   : "=r"(__tmp)    \
+                   :                \
+                   : "memory");     \
       __tmp;                        \
    })
 
 // Write CSR
-#define CSR_WRITE(csr, val)                         \
-   do {                                             \
-      uint32_t __v = (uint32_t)(val);               \
-      asm volatile("csrw " #csr ", %0" ::"r"(__v)); \
+#define CSR_WRITE(csr, val)            \
+   do {                                \
+      uint32_t __v = (uint32_t)(val);  \
+      asm volatile("csrw " #csr ", %0" \
+                   :                   \
+                   : "r"(__v)          \
+                   : "memory");        \
    } while (0)
 
 // Set bits in CSR
@@ -148,7 +168,6 @@ static inline int is_hex(char c) {
       uint32_t __m = (uint32_t)(mask);              \
       asm volatile("csrc " #csr ", %0" ::"r"(__m)); \
    } while (0)
-#endif
 
 //------------------------------------------------------------------------------
 // CSR bit definitions
@@ -190,4 +209,4 @@ static inline void intr_off(void) {
    CSR_CLEAR(mstatus, MSTATUS_MIE);
 }
 #define ASSERT_INTR_OFF() ASSERT_MSG(!intr_get(), "interrupts must be off\n")
-#define ASSERT_INTR_ON()  ASSERT_MSG(intr_get(),  "interrupts must be on\n")
+#define ASSERT_INTR_ON() ASSERT_MSG(intr_get(), "interrupts must be on\n")
