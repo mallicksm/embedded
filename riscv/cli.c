@@ -7,8 +7,7 @@
 //------------------------------------------------------------------------------
 #include "k.h"
 #include <stdint.h>
-#include "cmds.h"
-#include "progs.h"
+#include "cli_exec.h"
 #include "proc.h"
 
 static void prompt(void) {
