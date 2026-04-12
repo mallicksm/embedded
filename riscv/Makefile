@@ -34,7 +34,7 @@ LDFLAGS := \
    --gc-sections
 
 SRCS := crt0.S \
-         thread_switch.S \
+         thread_switch.c \
          trap_entry.c \
          main.c \
          uart.c \
