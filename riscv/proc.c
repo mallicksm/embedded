@@ -3,10 +3,9 @@
 
 #define MAX_TASKS 64
 #define TASK_STACK_SIZE 1024
-#define KSTACK_SIZE 1024
 
 uint8_t g_kstack[KSTACK_SIZE];
-uint8_t* g_kstack_top = g_kstack + KSTACK_SIZE;
+
 static struct task g_task_pool[MAX_TASKS];
 static uint8_t g_task_stacks[MAX_TASKS][TASK_STACK_SIZE];
 struct task* g_current_task = 0;

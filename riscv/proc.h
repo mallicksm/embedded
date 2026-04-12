@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#define KSTACK_SIZE 1024
+extern uint8_t g_kstack[KSTACK_SIZE];
 //------------------------------------------------------------------------------
 // Invariant:
 //   mscratch ALWAYS holds &current->tf
@@ -138,7 +140,7 @@ struct task {
    const char* name;
    int pid;
    struct thread_context ctx; // calee saved reg (thread switch)
-   struct trapframe* tf;      // caller saved reg (trap entry)
+   struct trapframe tf;       // caller saved reg (trap entry)
    enum task_state state;
    int sleep_ticks;
    void (*entry)(void);

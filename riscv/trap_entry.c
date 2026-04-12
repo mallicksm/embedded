@@ -50,9 +50,17 @@ __attribute__((naked)) void trap_entry(void) {
 
    // save original a0
    ASM("csrr t0, mscratch");
-   SAVE(a0, a0, struct trapframe);
+   SAVE(a0, t0, struct trapframe);
+
+   asm volatile(
+      "la sp, g_kstack\n"
+      "addi sp, sp, %0\n"
+      :
+      : "i"(KSTACK_SIZE)
+      : "sp", "memory");
 
    ASM("call trap_handler");
+   ASM("csrr a0, mscratch");
 
    // ---- RESTORE_A0 ----
    RESTORE(a0, ra, struct trapframe);
