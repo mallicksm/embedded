@@ -38,13 +38,12 @@ SRCS := crt0.S \
          trap_entry.c \
          main.c \
          uart.c \
-         cmds.c \
          printf.c \
          stdlib.c \
          string.c \
          cli.c \
+         cli_exec.c \
          proc.c \
-         progs.c \
          trap.c
 
 OBJS := $(SRCS:.c=.o)
