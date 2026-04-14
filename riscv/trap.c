@@ -71,7 +71,7 @@ void trap_handler(void) {
             sched_tick();
 
             if ((g_sched_mode == SCHED_PREE) && g_current_task) {
-               task_yield();
+               task_yield_pree();
             }
             return;
 

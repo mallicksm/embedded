@@ -201,7 +201,8 @@ _Static_assert(__builtin_offsetof(struct thread_context, sp) == 52, "sp offset")
 // public
 //------------------------------------------------------------------------------
 void task_spawn(const char* name, void (*entry)(void));
-void task_yield(void);
+void task_yield_coop(void);
+void task_yield_pree(void);
 void task_exit(void);
 void task_sleep(int);
 int task_getpid(void);

@@ -40,7 +40,7 @@ extern const struct progs __progs_end[];
          printf("Task (%s):" #name "\n",                \
                 (type) == PROG_COOP ? "coop" : "pree"); \
          if ((type) == PROG_COOP) {                     \
-            task_yield();                               \
+            task_yield_coop();                          \
          }                                              \
       }                                                 \
    }                                                    \

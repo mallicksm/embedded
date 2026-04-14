@@ -217,6 +217,6 @@ void run_worker() {
    printf("B\n");
 
    while (1)
-      task_yield();
+      task_yield_coop();
 }
 REGISTER_PROG("worker", run_worker);

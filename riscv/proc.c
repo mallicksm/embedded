@@ -58,35 +58,30 @@ static void task_init(struct task* task,
    ASSERT_MSG(name != 0, "task_init: null name\n");
    ASSERT_MSG(entry != 0, "task_init: null entry\n");
    ASSERT_MSG(stack_base != 0, "task_init: null stack\n");
+   for (uint32_t i = 0; i < sizeof(task->tf) / 4; i++) {
+      ((uint32_t*)&task->tf)[i] = 0;
+   }
+   for (uint32_t i = 0; i < sizeof(task->ctx) / 4; i++) {
+      ((uint32_t*)&task->ctx)[i] = 0;
+   }
 
    task->name = name;
    task->pid = 0;
    task->entry = entry;
+   task->tf.mepc = (uint32_t)entry;
    task->stack_base = stack_base;
    task->stack_size = stack_size;
    task->state = TASK_RUNNABLE;
    task->next = 0;
-
-   task->ctx.s0 = 0;
-   task->ctx.s1 = 0;
-   task->ctx.s2 = 0;
-   task->ctx.s3 = 0;
-   task->ctx.s4 = 0;
-   task->ctx.s5 = 0;
-   task->ctx.s6 = 0;
-   task->ctx.s7 = 0;
-   task->ctx.s8 = 0;
-   task->ctx.s9 = 0;
-   task->ctx.s10 = 0;
-   task->ctx.s11 = 0;
 
    stack_top = (uint32_t)(uintptr_t)(stack_base + stack_size);
    stack_top &= ~(uintptr_t)0xf;
 
    task->ctx.ra = (uint32_t)(uintptr_t)task_trampoline;
    task->ctx.sp = stack_top;
+   task->tf.sp = stack_top;
+   task->tf.ra = (uint32_t)task_trampoline;
 }
-
 static void task_trampoline(void) {
    ASSERT_MSG(g_current_task != 0, "trampoline: no current task\n");
 
@@ -153,7 +148,7 @@ void task_spawn(const char* name, void (*entry)(void)) {
 //    Although task_yield() may transfer control to other tasks, the calling
 //    task observes it as a simple function call that eventually returns.
 //------------------------------------------------------------------------------
-void task_yield(void) {
+void task_yield_coop(void) {
    struct task* current;
    struct task* next;
 
@@ -180,6 +175,37 @@ void task_yield(void) {
    g_current_task = current;
    current->state = TASK_RUNNING;
    CSR_WRITE(mscratch, &g_current_task->tf);
+}
+
+void task_yield_pree(void) {
+   struct task* current;
+   struct task* next;
+
+   current = g_current_task;
+   next = task_list_pick();
+
+   ASSERT_MSG(current != 0, "yield: no current task\n");
+   ASSERT_MSG(next != 0, "yield: no runnable task\n");
+
+   // If same task → nothing to do
+   if (next == current) {
+      CSR_WRITE(mscratch, &current->tf);
+      return;
+   }
+
+   // Update states
+   if (current->state == TASK_RUNNING) {
+      current->state = TASK_RUNNABLE;
+   }
+
+   next->state = TASK_RUNNING;
+   g_current_task = next;
+
+   // 🔥 THIS IS THE CONTEXT SWITCH
+   CSR_WRITE(mscratch, &next->tf);
+
+   // 🚫 NO thread_switch
+   // 🚫 NO code after this matters for execution
 }
 
 //------------------------------------------------------------------------------
@@ -236,7 +262,7 @@ void task_sleep(int ticks) {
    g_current_task->sleep_ticks = ticks;
    g_current_task->state = TASK_SLEEPING;
 
-   task_yield();
+   task_yield_coop();
 }
 
 //------------------------------------------------------------------------------
@@ -310,7 +336,7 @@ void sched_init(void) {
 
 static void idle(void) {
    while (1) {
-      task_yield();
+      task_yield_coop();
    }
 }
 

@@ -132,7 +132,7 @@ void prog_cli(void) {
    for (;;) {
       int c = uart_getc_nonblock();
       if (c < 0) {
-         task_yield();
+         task_yield_coop();
          continue;
       }
 
@@ -148,7 +148,7 @@ void prog_cli(void) {
          idx = 0;
          prompt();
 
-         task_yield();
+         task_yield_coop();
       } else if (c == 0x7f || c == 0x08) {
          if (idx > 0) {
             idx--;
