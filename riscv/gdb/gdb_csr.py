@@ -62,6 +62,12 @@ class gdb_csr(gdb.Command):
             pr(r,v)
 
    def invoke(self, arg, from_tty):
+      print("\n=== CSR: Arch ===")
+      self.dump_regs(
+         regs_sym  = [],
+         regs_yaml = ["misa"]
+      )
+      
       print("\n=== CSR: trap ===")
       self.dump_regs(
          regs_sym  = ["mepc", "mtvec"],
@@ -70,20 +76,14 @@ class gdb_csr(gdb.Command):
       
       print("\n=== CSR: state ===")
       self.dump_regs(
-         regs_sym  = [],
-         regs_yaml = ["mstatus", "misa"]
+         regs_sym  = ["mscratch"],
+         regs_yaml = ["mstatus"]
       )
       
       print("\n=== CSR: interrupt ===")
       self.dump_regs(
          regs_sym  = [],
          regs_yaml = ["mie", "mip"]
-      )
-      
-      print("\n=== CSR: misc ===")
-      self.dump_regs(
-         regs_sym  = ["mscratch"],
-         regs_yaml = []
       )
       print("\n=================\n")
 
